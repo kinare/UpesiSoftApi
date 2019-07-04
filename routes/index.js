@@ -1,6 +1,6 @@
 var express = require('express');
 var router = express.Router();
-const bcrypt = require('bcryptjs');
+var moment = require('moment');
 
 router.all('/', function(req, res, next) {
 	res.send({
@@ -9,8 +9,7 @@ router.all('/', function(req, res, next) {
 			name: 'Focus ERP API',
 			version: 'v1.0.1',
 			owner: 'www.digital4africa.com',
-			// password: bcrypt.hashSync('karibu', 10),
-			// time: 
+			timestamp: moment().format('YYYY-MM-DD HH:mm:ss')
 		}
 	})
 });
