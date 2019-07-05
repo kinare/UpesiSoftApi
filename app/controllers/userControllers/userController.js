@@ -126,7 +126,7 @@ exports.signup = function(req, res) {
                 } else {
                     res.status(400).send({
                         status: 'error',
-                        message: 'There was an error inserting user details. Please try again. If the issue persists, contact an administrator.'
+                        message: userResponse.text ? userResponse.text : 'There was an error inserting user details. Please try again. If the issue persists, contact an administrator.'
                     })
                 }
             })
@@ -288,6 +288,7 @@ exports.resetComplete = function(req, res) {
     if(!resetPasswordCode) {errorArray.push({name: 'resetPasswordCode', text: 'Missing reset code parameter.'})}
     if(!password) {errorArray.push({name: 'password', text: 'Missing password parameter.'})}
     if(!confirmPassword) {errorArray.push({name: 'confirmPassword', text: 'Missing confirm password parameter.'})}
+    if(password !== confirmPassword) {errorArray.push({name: 'confirmPassword', text: 'Passwords do not match. Please check.'})}
 
     if(errorArray.length > 0 ) {
         // If variables are missing
@@ -300,7 +301,37 @@ exports.resetComplete = function(req, res) {
         })
     }
 
-    // TODO: Update Password
+    let resetDetails = {
+        email: email,
+        resetPasswordCode: resetPasswordCode,
+        password: password
+    }
+
+    // Update Password
+    userIdentityModel.resetPassword(resetDetails, function(resetResponse) {
+        if(resetResponse.error) {
+            res.status(400).send({
+                status: 'error',
+                message: resetResponse.text
+            })
+        } else {
+            // If no errors
+            if(resetResponse.affectedRows > 0) {
+                // Successfully updated
+                res.send({
+                    status: 'success',
+                    data: null
+                })
+
+            } else {
+                // Error
+                res.status(400).send({
+                    status: 'error',
+                    message: 'There was an error updating user password. Please try again. If issue persists, please contact an administrator.'
+                })
+            }
+        }
+    })
 
 }
 

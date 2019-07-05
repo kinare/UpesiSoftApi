@@ -7,6 +7,7 @@ let pool  = mysql.createPool({
     password        : 'Karibu098!@#',
     database        : 'focusErp'
 });
+var moment = require('moment')
 
 // Get user by email
 exports.getByEmail = function(email = null, callback) {
@@ -17,7 +18,7 @@ exports.getByEmail = function(email = null, callback) {
 
     pool.query(sql, function (error, results, fields) {
         if (error) {
-            throw error;
+            callback(false)
         } else {
             if(results && results.length > 0) {
                 callback(results)
@@ -39,7 +40,8 @@ exports.updateUserDetails = function(updateVariable = null, updateData = null, c
 
     pool.query(sql, function (error, results, fields) {
         if (error) {
-            throw error;
+            // throw error
+            callback(false)
         } else {
             callback(results)
         }
@@ -55,7 +57,8 @@ exports.login = function(email = null, password = null, callback) {
 
     pool.query(sql, function (error, results, fields) {
         if (error) {
-            throw error;
+            // throw error;
+            callback({error: 'true', text: error.sqlMessage})
         } else {
             if(results && results.length > 0) {
                 // Check if activated
@@ -91,8 +94,11 @@ exports.signup = function(insertData = null, callback) {
     sql = mysql.format(sql, inserts);
 
     pool.query(sql, function (error, results, fields) {
-        if (error) {
-            throw error;
+        if(error) {
+            callback({
+                error: true,
+                text: error.sqlMessage
+            })
         } else {
             callback(results)
         }
@@ -108,7 +114,10 @@ exports.activate = function(email = null, activateData = null, callback) {
 
     pool.query(getSql, function (error, results, fields) {
         if (error) {
-            throw error;
+            callback({
+                error: true,
+                text: error.sqlMessage
+            })
         } else {
             if(results && results.length > 0) {
                 // Check if codes match
@@ -123,7 +132,10 @@ exports.activate = function(email = null, activateData = null, callback) {
                 
                     pool.query(sql, function (error, results, fields) {
                         if (error) {
-                            throw error;
+                            callback({
+                                error: true,
+                                text: error.sqlMessage
+                            })
                         } else {
                             callback(results)
                         }
@@ -138,4 +150,54 @@ exports.activate = function(email = null, activateData = null, callback) {
             }
         }
     });
+}
+
+exports.resetPassword = function(resetDetails, callback) {
+    // Get user based on email
+    exports.getByEmail(resetDetails.email, function(userDetails) {
+        if(userDetails[0]) {
+            // Check if code matches
+            if(userDetails[0].resetPasswordCode === resetDetails.resetPasswordCode) {
+                // Check if passwords are the same
+                bcrypt.compare(resetDetails.password, userDetails[0].password, function(err, res) {
+                    if(res) {
+                        // Passwords match
+                        callback({
+                            error: true,
+                            text: 'Password cannot be the same as the old one. Please enter a new password.'
+                        })
+                    } else {
+                        // Passwords don't match - Update password entry
+                        let updateVariable = {
+                            name: 'id',
+                            value: userDetails[0].id
+                        }
+
+                        let updateData = {
+                            password: bcrypt.hashSync(resetDetails.password, 10),
+                            resetPasswordCode: null,
+                            updatedAt: moment().format('YYYY-MM-DD HH:mm:ss')
+                        }
+
+                        exports.updateUserDetails(updateVariable, updateData, function(updateResponse) {
+                            callback(updateResponse)
+                        })
+                    } 
+                });
+
+            } else {
+                // Codes do not match
+                callback({
+                    error: true,
+                    text: 'Codes do not match. Please ensure that your token was not tampered with.'
+                })
+            }
+        } else {
+            // No such user exists
+            callback({
+                error: true,
+                text: 'No such user exists. Please ensure that your token was not tampered with.'
+            })
+        }
+    })
 }
