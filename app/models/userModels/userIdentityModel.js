@@ -11,9 +11,10 @@ var moment = require('moment')
 
 // Get user by email
 exports.getByEmail = function(email = null, callback) {
-    let sql = "SELECT * FROM ?? WHERE ?? = ?";
+    let sql = "SELECT users.*, userRoles.userType FROM ?? LEFT JOIN ?? ON ?? = ?? WHERE ?? = ?";
 
-    let inserts = ['users', 'email', email];
+    // let columns = ['users.*', 'userRoles.name as userType'];
+    let inserts = ['users', 'userRoles', 'users.roleId', 'userRoles.id', 'email', email];
     sql = mysql.format(sql, inserts);
 
     pool.query(sql, function (error, results, fields) {
@@ -50,9 +51,9 @@ exports.updateUserDetails = function(updateVariable = null, updateData = null, c
 
 // Check if user can login
 exports.login = function(email = null, password = null, callback) {
-    let sql = "SELECT * FROM ?? WHERE ?? = ? AND ?? = ?";
+    let sql = "SELECT users.*, userRoles.userType FROM ?? LEFT JOIN ?? ON ?? = ?? WHERE ?? = ? AND ?? = ?";
 
-    let inserts = ['users', 'email', email, 'state', 1];
+    let inserts = ['users', 'userRoles', 'users.roleId', 'userRoles.id', 'email', email, 'users.state', 1];
     sql = mysql.format(sql, inserts);
 
     pool.query(sql, function (error, results, fields) {

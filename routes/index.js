@@ -2,7 +2,7 @@ var express = require('express');
 var router = express.Router();
 var moment = require('moment');
 
-router.all('/', function(req, res, next) {
+router.all('/', function(req, res) {
 	res.send({
 		status: 'success',
 		data: {

@@ -2,7 +2,43 @@ let userIdentityModel = require('../../models/userModels/userIdentityModel')
 let businessAccountsModel = require('../../models/businessModels/businessAccountModel')
 let sendMail = require('../../libraries/sendMail')
 var moment = require('moment')
-const bcrypt = require('bcryptjs');
+const bcrypt = require('bcryptjs')
+const jwt = require('jsonwebtoken');
+const key = 'SFS234JKSP94RKS024NA052HOPQWR24'
+
+exports.verifyUserToken = function(req, res, next) {
+    try{
+        const token = req.headers.authorization.split(" ")[1]
+        jwt.verify(token, key, function (err, payload) {
+            console.log(payload)
+            if(payload && payload.email) {
+                // Get user based on the payload
+                userIdentityModel.getByEmail(payload.email, function(response) {
+                    // Check if the user exists
+                    if(response && response.length > 0) {
+                        req.userDetails = response[0]
+                        next()
+                    } else {
+                        res.send({
+                            status: 'error',
+                            message: 'There was an error verifying the user. Please ensure that the token has not been tampered with.'
+                        })
+                    }
+                })
+            } else {
+                res.send({
+                    status: 'error',
+                    message: 'There was an error verifying the user. Please ensure that the token has not been tampered with.'
+                })
+            }
+        })
+    }catch(e){
+        res.send({
+            status: 'error',
+            message: 'There was an error verifying the user.'
+        })
+    }
+}
 
 exports.login = function(req, res) {
     // Get request parameters
@@ -17,7 +53,7 @@ exports.login = function(req, res) {
         // If variables are missing
         return res.status(400).send({
             status: 'error',
-            message: 'Missing parameters',
+            message: 'Missing parameters.',
             data: {
                 list: errorArray
             }
@@ -32,11 +68,29 @@ exports.login = function(req, res) {
                 message: response.text
             })
         } else {
+            // Get user token
+            let payload = {
+                email: response.email,
+                userId: response.id,
+                firstName: response.firstName,
+                lastName: response.lastName,
+                profilePicture: response.profilePicture,
+                roleId: response.roleId,
+                userType: response.userType,
+                businessId: response.businessId
+            }
+
+            let options = {
+                issuer: req.hostname,
+                subject: response.email,
+                audience: req.hostname
+            }
+
             res.send({
                 status: 'success',
                 data: {
                     user: response,
-                    token: ''
+                    token: jwt.sign(payload, key, options)
                 }
             })
         }
@@ -72,7 +126,7 @@ exports.signup = function(req, res) {
         // If variables are missing
         return res.status(400).send({
             status: 'error',
-            message: 'Missing parameters',
+            message: 'Missing parameters.',
             data: {
                 list: errorArray
             }
@@ -81,8 +135,8 @@ exports.signup = function(req, res) {
 
     // Insert business details
     let insertBusinessData = {
-        name: businessName,
-        typeId: businessTypeId,
+        businessName: businessName,
+        businessTypeId: businessTypeId,
         createdAt: moment().format('YYYY-MM-DD HH:mm:ss'),
         updatedAt: moment().format('YYYY-MM-DD HH:mm:ss')
     }
@@ -155,7 +209,7 @@ exports.activate = function(req, res) {
         // If variables are missing
         return res.status(400).send({
             status: 'error',
-            message: 'Missing parameters',
+            message: 'Missing parameters.',
             data: {
                 list: errorArray
             }
@@ -214,7 +268,7 @@ exports.resetInitiate = function(req, res) {
         // If variables are missing
         return res.status(400).send({
             status: 'error',
-            message: 'Missing parameters',
+            message: 'Missing parameters.',
             data: {
                 list: errorArray
             }
@@ -294,7 +348,7 @@ exports.resetComplete = function(req, res) {
         // If variables are missing
         return res.status(400).send({
             status: 'error',
-            message: 'Missing parameters',
+            message: 'Missing parameters.',
             data: {
                 list: errorArray
             }
