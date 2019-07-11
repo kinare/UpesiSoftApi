@@ -7,7 +7,7 @@ router.all('/', function(req, res) {
 		status: 'success',
 		data: {
 			name: 'Focus ERP API',
-			version: 'v1.0.1',
+			version: 'v1.0.2',
 			owner: 'www.digital4africa.com',
 			timestamp: moment().format('YYYY-MM-DD HH:mm:ss')
 		}
