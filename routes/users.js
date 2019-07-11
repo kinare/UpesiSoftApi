@@ -11,6 +11,7 @@ router.post('/v1/users/reset/initiate', userController.resetInitiate);
 router.post('/v1/users/reset/complete', userController.resetComplete);
 
 // User Management Routes - Business
-router.post('/v1/b/users/create', userManagement.createUser)
+router.post('/v1/b/users/create', userController.verifyUserToken, userManagement.createUser)
+router.post('/v1/b/roles/create', userController.verifyUserToken, userManagement.createRole)
 
 module.exports = router;

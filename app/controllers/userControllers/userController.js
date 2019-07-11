@@ -10,7 +10,6 @@ exports.verifyUserToken = function(req, res, next) {
     try{
         const token = req.headers.authorization.split(" ")[1]
         jwt.verify(token, key, function (err, payload) {
-            console.log(payload)
             if(payload && payload.email) {
                 // Get user based on the payload
                 userIdentityModel.getByEmail(payload.email, function(response) {
@@ -21,14 +20,14 @@ exports.verifyUserToken = function(req, res, next) {
                     } else {
                         res.send({
                             status: 'error',
-                            message: 'There was an error verifying the user. Please ensure that the token has not been tampered with.'
+                            message: 'There was an error verifying the user. Please ensure that the token has not been tampered with. Not.'
                         })
                     }
                 })
             } else {
                 res.send({
                     status: 'error',
-                    message: 'There was an error verifying the user. Please ensure that the token has not been tampered with.'
+                    message: 'There was an error verifying the user. Please ensure that the token has not been tampered with. Here. '
                 })
             }
         })
@@ -76,7 +75,7 @@ exports.login = function(req, res) {
                 lastName: response.lastName,
                 profilePicture: response.profilePicture,
                 roleId: response.roleId,
-                userType: response.userType,
+                roleType: response.roleType,
                 businessId: response.businessId
             }
 
@@ -160,7 +159,7 @@ exports.signup = function(req, res) {
             userIdentityModel.signup(insertUserData, function(userResponse) {
                 // Check if user details were inserted
                 if(userResponse.insertId) {
-                    sendActivationEmail(insertUserData, function(activationEmailResponse) {
+                    exports.sendActivationEmail(insertUserData, function(activationEmailResponse) {
                         // Parse activation email response
                         if(activationEmailResponse.error) {
                             // Return error message
@@ -233,7 +232,7 @@ exports.activate = function(req, res) {
             if(response.affectedRows > 0) {
                 // Send successful activation link
                 let mailOptions = {
-                    from: 'orders@doorstep.co.ke',
+                    from: 'Focus ERP <no-reply@upesisoft.com>',
                     to: email,
                     subject: 'Successful Activation - Focus ERP',
                     html: "<p>Your account has been successfully activated! Login <a href='https://www.focus.upesisoft.com/auth/login'>here</a> to access the platform.</p><p>Regards,</p><p>The Focus ERP Team</p>"
@@ -297,7 +296,7 @@ exports.resetInitiate = function(req, res) {
                     let resetPasswordUrl = 'https://focus.upesisoft.com/auth/password/' + token
         
                     let mailOptions = {
-                        from: 'orders@doorstep.co.ke',
+                        from: 'Focus ERP <no-reply@upesisoft.com>',
                         to: email,
                         subject: 'Reset Password - Focus ERP',
                         html: "<p>To reset your password, click <a href=" + resetPasswordUrl + ">here</a> and follow the instructions.</p><p>If you did not make this request, ignore this email.</p><p>Regards,</p><p>The Focus ERP Team</p>"
@@ -389,13 +388,13 @@ exports.resetComplete = function(req, res) {
 }
 
 // Send user activation email. Function on it's own for reusability.
-function sendActivationEmail(insertUserData = null, callback) {
+exports.sendActivationEmail = function (insertUserData = null, callback) {
     // Get secure token
     let token = encodeURIComponent(Buffer.from(insertUserData.email + ":" + insertUserData.activationCode).toString('base64'))
     let activationUrl = 'https://www.focus.upesisoft.com/auth/activation/' + token
 
     let mailOptions = {
-        from: 'orders@doorstep.co.ke',
+        from: 'Focus ERP <no-reply@upesisoft.com>',
         to: insertUserData.email,
         subject: 'Activation Email - Focus ERP',
         html: "<p>Dear " + insertUserData.firstName + ",</p><p>Thank you for signing up. To complete the process, click <a href=" + activationUrl + ">here</a> or enter the code below in the activation screen.</p><p><strong>" + insertUserData.activationCode + "</strong></p><p>Regards,</p><p>The Focus ERP Team</p>"

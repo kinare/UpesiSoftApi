@@ -2,12 +2,12 @@ var nodemailer = require('nodemailer');
 
 exports.send = function(mailOptions = null, callback) {
     var transporter = nodemailer.createTransport({
-        host: "host61.registrar-servers.com",
+        host: "cp-1.webhostbox.net",
         port: 465,
         secure: true,
         auth: {
-            user: 'orders@doorstep.co.ke',
-            pass: 'doorstep254'
+            user: 'no-reply@upesisoft.com',
+            pass: '~cwMXChV~$Ig'
         }
     });
 

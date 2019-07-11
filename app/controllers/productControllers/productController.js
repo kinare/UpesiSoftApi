@@ -22,7 +22,7 @@ exports.getAll = function(req, res) {
     // Proceed to get product list
     productModel.getAll(businessId, function(response) {
         if(response.error) {
-            res.send({
+            res.status(400).send({
                 status: 'error',
                 message: response.text,
                 sqlMessage: response.sqlMessage ? response.sqlMessage : null
