@@ -236,7 +236,7 @@ exports.activate = function(req, res) {
                     from: 'orders@doorstep.co.ke',
                     to: email,
                     subject: 'Successful Activation - Focus ERP',
-                    html: "<p>Your account has been successfully activated! Login <a href='http://localhost:3000/login'>here</a> to access the platform.</p><p>Regards,</p><p>The Focus ERP Team</p>"
+                    html: "<p>Your account has been successfully activated! Login <a href='https://www.focus.upesisoft.com/auth/login'>here</a> to access the platform.</p><p>Regards,</p><p>The Focus ERP Team</p>"
                 }
 
                 sendMail.send(mailOptions, function(response) {
@@ -294,7 +294,7 @@ exports.resetInitiate = function(req, res) {
                 if(response.affectedRows > 0) {
                     // Generate token
                     let token = encodeURIComponent(Buffer.from(email + "+" + resetData.resetPasswordCode).toString('base64'))
-                    let resetPasswordUrl = 'http://localhost/reset?ss=' + token
+                    let resetPasswordUrl = 'https://focus.upesisoft.com/auth/password/' + token
         
                     let mailOptions = {
                         from: 'orders@doorstep.co.ke',
@@ -386,14 +386,13 @@ exports.resetComplete = function(req, res) {
             }
         }
     })
-
 }
 
 // Send user activation email. Function on it's own for reusability.
 function sendActivationEmail(insertUserData = null, callback) {
     // Get secure token
-    let token = encodeURIComponent(Buffer.from(insertUserData.email + "+" + insertUserData.activationCode).toString('base64'))
-    let activationUrl = 'http://localhost/activate?ss=' + token
+    let token = encodeURIComponent(Buffer.from(insertUserData.email + ":" + insertUserData.activationCode).toString('base64'))
+    let activationUrl = 'https://www.focus.upesisoft.com/auth/activation/' + token
 
     let mailOptions = {
         from: 'orders@doorstep.co.ke',
