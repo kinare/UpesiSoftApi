@@ -20,14 +20,14 @@ exports.verifyUserToken = function(req, res, next) {
                     } else {
                         res.send({
                             status: 'error',
-                            message: 'There was an error verifying the user. Please ensure that the token has not been tampered with. Not.'
+                            message: 'There was an error verifying the user. Please ensure that the token has not been tampered with.'
                         })
                     }
                 })
             } else {
                 res.send({
                     status: 'error',
-                    message: 'There was an error verifying the user. Please ensure that the token has not been tampered with. Here. '
+                    message: 'There was an error verifying the user. Please ensure that the token has not been tampered with.'
                 })
             }
         })
