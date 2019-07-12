@@ -52,6 +52,12 @@ exports.new = function(req, res) {
     let measurementUnit = req.body['measurementUnit']
     let taxClassId = req.body['taxClassId']
     let published = req.body['published']
+    // New fields - Focus
+    let storageLocation = req.body['storageLocation'] // aisle No. etc
+    let sellAs = req.body['sellAs'] // CUSTOM or FULL
+    let customSaleUnit = req.body['customSaleUnit'] // Only available if sellAs === CUSTOM
+    let measurement = req.body['measurement']
+    let qty = req.body['qty'] // Default - 0
 
     let errorArray = []
     if(!businessId) {errorArray.push({name: 'businessId', text: 'Missing user token.'})}
@@ -62,6 +68,13 @@ exports.new = function(req, res) {
     if(!price) {errorArray.push({name: 'price', text: 'Missing product price.'})}
     if(!measurementUnit) {errorArray.push({name: 'measurementUnit', text: 'Missing measurement unit.'})}
     if(!published) {errorArray.push({name: 'published', text: 'Missing published field.'})}
+    if(!sellAs) {errorArray.push({name: 'sellAs', text: 'Missing sellAs field.'})}
+    // If sellAs === CUSTOM, check for customSaleUnit & measurement
+    if(sellAs === 'CUSTOM') {
+        if(!customSaleUnit) {errorArray.push({name: 'customSaleUnit', text: 'Missing customSaleUnit field.'})}
+        if(!measurement) {errorArray.push({name: 'measurement', text: 'Missing measurement field.'})}
+        if(!qty) {errorArray.push({name: 'qty', text: 'Missing quantity field.'})}    
+    }
 
     if(errorArray.length > 0 ) {
         // If variables are missing
@@ -84,6 +97,11 @@ exports.new = function(req, res) {
         availableFrom: availableFrom ? availableFrom : null,
         availableTo: availableTo ? availableTo : null,
         sku: sku ? sku : null,
+        sellAs: sellAs,
+        storageLocation: storageLocation,
+        customSaleUnit: customSaleUnit,
+        measurement: measurement,
+        qty: qty,
         price: price,
         salePrice: salePrice ? salePrice : null,
         measurementUnit: measurementUnit,
@@ -92,6 +110,8 @@ exports.new = function(req, res) {
         createdAt: moment().format('YYYY-MM-DD HH:mm:ss'),
         updatedAt: moment().format('YYYY-MM-DD HH:mm:ss')
     }
+
+    // TODO: Insert sub-products based on the sellAs field, quantity & measurement type
 
     productModel.addNew(insertData, function(response) {
         // Check if user details were inserted
@@ -116,5 +136,123 @@ exports.new = function(req, res) {
                 sqlMessage: response.sqlMessage ? response.sqlMessage : null
             })
         }        
+    })
+}
+
+exports.getMeasurementUnits = function(req, res) {
+    // Get params
+
+    // Get measurement Units list
+    productModel.getMeasurementUnits(function(response) {
+        if(response.error) {
+            res.status(400).send({
+                status: 'error',
+                message: response.text,
+                sqlMessage: response.sqlMessage ? response.sqlMessage : null
+            })
+        } else {
+            // Return response list
+            res.send({
+                status: 'success',
+                data: response
+            })
+        }        
+    })
+}
+
+// Create new product categories - if there is no business Id, those are the global categories
+exports.createCategory = function(req, res) {
+    // Get params
+    let businessId = req.userDetails.businessId
+    let productCategoryName = req.body['name']
+    let productCategoryDesc = req.body['description']
+    let parentId = req.body['parentId']
+
+    // Check if all required parameters were passed
+    let errorArray = []
+    if(!businessId) {errorArray.push({name: 'businessId', text: 'Missing user token.'})}
+    if(!productCategoryName) {errorArray.push({name: 'name', text: 'Missing name parameter.'})}
+    if(!productCategoryDesc) {errorArray.push({name: 'description', text: 'Missing description parameter.'})}
+
+    if(errorArray.length > 0) {
+        // If variables are missing
+        return res.status(400).send({
+            status: 'error',
+            message: 'Missing user token. Please check request.',
+            data: {
+                list: errorArray
+            }
+        })
+    }
+
+    // Insert data to the table
+    let categoryData = {
+        productCategoryName: productCategoryName,
+        productCategoryDesc: productCategoryDesc,
+        parentId: parentId ? parentId : null,
+        businessId: businessId,
+        createdAt: moment().format('YYYY-MM-DD HH:mm:ss'),
+        updatedAt: moment().format('YYYY-MM-DD HH:mm:ss')
+    }
+
+    productModel.insertProductCategory(categoryData, function(response) {
+        // Check if user details were inserted
+        if(!response.error) {
+            if(response.insertId) {
+                res.send({
+                    status: 'success',
+                    data: null
+                })
+            } else {
+                // No product category inserted
+                res.send({
+                    status: 'error',
+                    message: 'No new product category was inserted.'
+                })
+            }
+        } else {
+            // Return error
+            res.send({
+                status: 'error',
+                message: response.text,
+                sqlMessage: response.sqlMessage ? response.sqlMessage : null
+            })
+        }
+    })
+}
+
+exports.getAllCategories = function(req, res) {
+    // Get params
+    let businessId = req.userDetails.businessId
+
+    let errorArray = []
+    if(!businessId) {errorArray.push({name: 'businessId', text: 'Missing user token.'})}
+
+    if(errorArray.length > 0 ) {
+        // If variables are missing
+        return res.status(400).send({
+            status: 'error',
+            message: 'Missing user token. Please check request.',
+            data: {
+                list: errorArray
+            }
+        })
+    }
+
+    // Proceed to get product list
+    productModel.getAllCategories(businessId, function(response) {
+        if(response.error) {
+            res.status(400).send({
+                status: 'error',
+                message: response.text,
+                sqlMessage: response.sqlMessage ? response.sqlMessage : null
+            })
+        } else {
+            // Return product categories list
+            res.send({
+                status: 'success',
+                data: response
+            })
+        }
     })
 }
