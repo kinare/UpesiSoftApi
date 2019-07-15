@@ -68,29 +68,33 @@ exports.login = function(req, res) {
             })
         } else {
             // Get user token
-            let payload = {
-                email: response.email,
-                userId: response.id,
-                firstName: response.firstName,
-                lastName: response.lastName,
-                profilePicture: response.profilePicture,
-                roleId: response.roleId,
-                roleType: response.roleType,
-                businessId: response.businessId
-            }
-
-            let options = {
-                issuer: req.hostname,
-                subject: response.email,
-                audience: req.hostname
-            }
-
-            res.send({
-                status: 'success',
-                data: {
-                    user: response,
-                    token: jwt.sign(payload, key, options)
+            businessAccountsModel.getBusinessById(response.businessId, function(businessResponse) {
+                // Return data
+                let payload = {
+                    email: response.email,
+                    userId: response.id,
+                    firstName: response.firstName,
+                    lastName: response.lastName,
+                    profilePicture: response.profilePicture,
+                    roleId: response.roleId,
+                    roleType: response.roleType,
+                    businessId: response.businessId
                 }
+    
+                let options = {
+                    issuer: req.hostname,
+                    subject: response.email,
+                    audience: req.hostname
+                }
+    
+                res.send({
+                    status: 'success',
+                    data: {
+                        user: response,
+                        businessDetails: businessResponse[0] ? businessResponse[0] : null,
+                        token: jwt.sign(payload, key, options)
+                    }
+                })
             })
         }
     })

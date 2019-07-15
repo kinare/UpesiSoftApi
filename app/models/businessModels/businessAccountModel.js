@@ -22,3 +22,24 @@ exports.register = function(insertData = null, callback) {
         }
     });
 }
+
+// Get business by ID
+exports.getBusinessById = function(id = null, callback) {
+    let sql = "SELECT businesses.*, businessTypes.businessTypeName FROM ?? LEFT JOIN ?? ON ?? = ?? WHERE ?? = ? AND ?? = ?";
+    
+    let inserts = ['businesses', 'businessTypes', 'businesses.businessTypeId', 'businessTypes.id', 'businesses.id', id, 'businesses.state', 1];
+    sql = mysql.format(sql, inserts);
+
+    pool.query(sql, function (error, results, fields) {
+        if (error) {
+            callback(false)
+        } else {
+            if(results && results.length > 0) {
+                callback(results)
+            } else {
+                // There is no business with that ID
+                callback(false)
+            }
+        }
+    });
+}
