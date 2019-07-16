@@ -67,7 +67,7 @@ exports.new = function(req, res) {
     if(!categories) {errorArray.push({name: 'categories', text: 'Missing product categories.'})}
     if(!price) {errorArray.push({name: 'price', text: 'Missing product price.'})}
     if(!measurementUnit) {errorArray.push({name: 'measurementUnit', text: 'Missing measurement unit.'})}
-    if(!published) {errorArray.push({name: 'published', text: 'Missing published field.'})}
+    // if(!published) {errorArray.push({name: 'published', text: 'Missing published field.'})}
     if(!sellAs) {errorArray.push({name: 'sellAs', text: 'Missing sellAs field.'})}
     // If sellAs === CUSTOM, check for customSaleUnit & measurement
     if(sellAs === 'CUSTOM') {
@@ -106,7 +106,7 @@ exports.new = function(req, res) {
         salePrice: salePrice ? salePrice : null,
         measurementUnit: measurementUnit,
         taxClassId: taxClassId ? taxClassId : null,
-        published: published,
+        published: published ? published : 0,
         createdAt: moment().format('YYYY-MM-DD HH:mm:ss'),
         updatedAt: moment().format('YYYY-MM-DD HH:mm:ss')
     }
