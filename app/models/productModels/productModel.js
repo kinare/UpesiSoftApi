@@ -56,17 +56,17 @@ exports.addNew = function(insertData = null, callback) {
 }
 
 // Add sub-products
-exports.addSubProducts = function(subProducts = null, callback) {
-    let sql = "INSERT INTO ?? SET ?";
+exports.addSubProductList = function(subProductList = null, callback) {
+    let sql = "INSERT INTO ?? (??) VALUES ?";
 
-    let inserts = ['subProducts', subProducts];
+    let inserts = ['subProductList', ['primaryProductId','measurement','measurementUnit','state','createdAt','updatedAt'], subProductList];
     sql = mysql.format(sql, inserts);
 
     pool.query(sql, function (error, results, fields) {
         if(error) {
             callback({
                 error: true,
-                text: 'There was an error inserting the sub-products.',
+                text: 'There was an error inserting the sub-product list.',
                 sqlMessage: error.sqlMessage
             })
         } else {

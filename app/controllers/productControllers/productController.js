@@ -57,7 +57,7 @@ exports.new = function(req, res) {
     let sellAs = req.body['sellAs'] // CUSTOM or FULL
     let customSaleUnit = req.body['customSaleUnit'] // Only available if sellAs === CUSTOM
     let measurement = req.body['measurement']
-    let qty = req.body['qty'] // Default - 0
+    let qty = parseInt(req.body['qty']) ? parseInt(req.body['qty']) : 0 // Default - 0
 
     let errorArray = []
     if(!businessId) {errorArray.push({name: 'businessId', text: 'Missing user token.'})}
@@ -73,7 +73,8 @@ exports.new = function(req, res) {
     if(sellAs === 'CUSTOM') {
         if(!customSaleUnit) {errorArray.push({name: 'customSaleUnit', text: 'Missing customSaleUnit field.'})}
         if(!measurement) {errorArray.push({name: 'measurement', text: 'Missing measurement field.'})}
-        if(!qty) {errorArray.push({name: 'qty', text: 'Missing quantity field.'})}    
+        // Check if number
+        if(!qty && typeof qty == "number") {errorArray.push({name: 'qty', text: 'Missing quantity field or wrong datatype. Please enter a number.'})}    
     }
 
     if(errorArray.length > 0 ) {
@@ -111,26 +112,47 @@ exports.new = function(req, res) {
         updatedAt: moment().format('YYYY-MM-DD HH:mm:ss')
     }
 
-    // TODO: Insert sub-products based on the sellAs field, quantity & measurement type
-
     productModel.addNew(insertData, function(response) {
         // Check if user details were inserted
         if(!response.error) {
-            if(response.insertId) {
+            // Insert sub-products based on the sellAs field, quantity & measurement type
+            if(sellAs === "CUSTOM") {
+                // Upload subProductList
+                // Getting data
+                let subProductList = []
+
+                // Loop into list
+                for(let i = 0; i < qty; i++) {
+                    subProductList.push([response.insertId,measurement,measurementUnit,1,moment().format('YYYY-MM-DD HH:mm:ss'),moment().format('YYYY-MM-DD HH:mm:ss')])
+                }
+
+                // Insert to database
+                productModel.addSubProductList(subProductList, function(subProductsResponse) {
+                    if(subProductsResponse.insertId) {
+                        res.send({
+                            status: 'success',
+                            data: null
+                        })
+                    } else {
+                        // No sub-products inserted
+                        res.status(400).send({
+                            status: 'error',
+                            message: 'There was an error inserting the sub product list.',
+                            sqlMessage: response.sqlMessage ? response.sqlMessage : null
+                        })
+                    }
+                })
+            } else {
+                // Inserted FULL Product
                 res.send({
                     status: 'success',
                     data: null
                 })
-            } else {
-                // No product inserted
-                res.send({
-                    status: 'error',
-                    message: 'No new product was inserted.'
-                })
             }
+
         } else {
             // Return error
-            res.send({
+            res.status(400).send({
                 status: 'error',
                 message: response.text,
                 sqlMessage: response.sqlMessage ? response.sqlMessage : null
