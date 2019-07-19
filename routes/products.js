@@ -6,6 +6,8 @@ const productController = require('../app/controllers/productControllers/product
 router.get('/v1/products/get/all', userController.verifyUserToken, productController.getAll)
 router.post('/v1/products/new', userController.verifyUserToken, productController.new)
 
+router.get('/v1/product/subProducts/all', userController.verifyUserToken, productController.getSubProducts)
+
 router.get('/v1/products/measurementUnits', userController.verifyUserToken, productController.getMeasurementUnits)
 
 router.post('/v1/products/createCategory', userController.verifyUserToken, productController.createCategory)

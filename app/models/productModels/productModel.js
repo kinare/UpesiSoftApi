@@ -9,9 +9,9 @@ let pool  = mysql.createPool({
 
 // Get all products
 exports.getAll = function(businessId = null, callback) {
-    let sql = "SELECT * FROM ?? WHERE ?? = ? AND ?? = ?";
+    let sql = "SELECT products.*, measurementUnits.measurementName, measurementUnits.measurementAbbreviation FROM ?? LEFT JOIN ?? ON ?? = ?? WHERE ?? = ? AND ?? = ?";
     
-    let inserts = ['products', 'businessId', businessId, 'state', 1];
+    let inserts = ['products', 'measurementUnits', 'products.measurementUnitId', 'measurementUnits.id', 'businessId', businessId, 'products.state', 1];
     sql = mysql.format(sql, inserts);
 
     pool.query(sql, function (error, results, fields) {
@@ -59,7 +59,7 @@ exports.addNew = function(insertData = null, callback) {
 exports.addSubProductList = function(subProductList = null, callback) {
     let sql = "INSERT INTO ?? (??) VALUES ?";
 
-    let inserts = ['subProductList', ['primaryProductId','measurement','measurementUnit','state','createdAt','updatedAt'], subProductList];
+    let inserts = ['subProductList', ['primaryProductId','measurement','measurementUnitId','state','createdAt','updatedAt'], subProductList];
     sql = mysql.format(sql, inserts);
 
     pool.query(sql, function (error, results, fields) {
@@ -146,4 +146,39 @@ exports.getAllCategories = function(businessId = null, callback) {
             }
         }
     });
+}
+
+exports.getSubProducts = function(productId = null, callback) {
+    let sql = "SELECT subProductList.*, measurementUnits.measurementAbbreviation, measurementUnits.measurementName, products.productName, products.sku, products.price, products.salePrice, products.unitPrice FROM ?? LEFT JOIN ?? ON ?? = ?? LEFT JOIN ?? ON ?? = ?? WHERE ?? = ? AND ?? = ?";
+    
+    let inserts = ['subProductList', 'measurementUnits', 'subProductList.measurementUnitId', 'measurementUnits.id', 'products', 'subProductList.primaryProductId', 'products.id', 'primaryProductId', productId, 'subProductList.state', 1];
+    sql = mysql.format(sql, inserts);
+
+    pool.query(sql, function (error, results, fields) {
+        if (error) {
+            callback({
+                error: true,
+                text: 'There was an error retrieving the sub product list.',
+                sqlMessage: error.sqlMessage 
+            })
+        } else {
+            if(results && results.length > 0) {
+                callback(results)
+            } else {
+                // No products exists
+                callback({
+                    error: true,
+                    text: 'There were no sub products found.'
+                })
+            }
+        }
+    });
+}
+
+exports.updateProduct = function(productId = null, updateDetails = null, callback) {
+
+}
+
+exports.updateSubProductDetails = function(subProductId = null, updateDetails = null, callback) {
+    
 }

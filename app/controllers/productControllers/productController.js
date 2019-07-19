@@ -49,7 +49,7 @@ exports.new = function(req, res) {
     let sku = req.body['sku']
     let price = req.body['price']
     let salePrice = req.body['salePrice']
-    let measurementUnit = req.body['measurementUnit']
+    let measurementUnitId = req.body['measurementUnitId']
     let taxClassId = req.body['taxClassId']
     let published = req.body['published']
     // New fields - Focus
@@ -66,7 +66,7 @@ exports.new = function(req, res) {
     if(!productShortDescription) {errorArray.push({name: 'productShortDescription', text: 'Missing product short description.'})}
     if(!categories) {errorArray.push({name: 'categories', text: 'Missing product categories.'})}
     if(!price) {errorArray.push({name: 'price', text: 'Missing product price.'})}
-    if(!measurementUnit) {errorArray.push({name: 'measurementUnit', text: 'Missing measurement unit.'})}
+    if(!measurementUnitId) {errorArray.push({name: 'measurementUnitId', text: 'Missing measurement unit.'})}
     if(!published) {errorArray.push({name: 'published', text: 'Missing published field.'})}
     if(!sellAs) {errorArray.push({name: 'sellAs', text: 'Missing sellAs field.'})}
     // If sellAs === CUSTOM, check for customSaleUnit & measurement
@@ -81,7 +81,7 @@ exports.new = function(req, res) {
         // If variables are missing
         return res.status(400).send({
             status: 'error',
-            message: 'Missing user token. Please check request.',
+            message: 'Missing parameters. Please check data list.',
             data: {
                 list: errorArray
             }
@@ -105,7 +105,7 @@ exports.new = function(req, res) {
         qty: qty,
         price: price,
         salePrice: salePrice ? salePrice : null,
-        measurementUnit: measurementUnit,
+        measurementUnitId: measurementUnitId,
         taxClassId: taxClassId ? taxClassId : null,
         published: published,
         createdAt: moment().format('YYYY-MM-DD HH:mm:ss'),
@@ -123,7 +123,7 @@ exports.new = function(req, res) {
 
                 // Loop into list
                 for(let i = 0; i < qty; i++) {
-                    subProductList.push([response.insertId,measurement,measurementUnit,1,moment().format('YYYY-MM-DD HH:mm:ss'),moment().format('YYYY-MM-DD HH:mm:ss')])
+                    subProductList.push([response.insertId,measurement,measurementUnitId,1,moment().format('YYYY-MM-DD HH:mm:ss'),moment().format('YYYY-MM-DD HH:mm:ss')])
                 }
 
                 // Insert to database
@@ -162,7 +162,22 @@ exports.new = function(req, res) {
 }
 
 exports.getMeasurementUnits = function(req, res) {
-    // Get params
+    // Checking all parameters are available
+    let businessId = req.userDetails.businessId
+
+    let errorArray = []
+    if(!businessId) {errorArray.push({name: 'businessId', text: 'Missing user token.'})}
+
+    if(errorArray.length > 0 ) {
+        // If variables are missing
+        return res.status(400).send({
+            status: 'error',
+            message: 'Missing user token. Please check request.',
+            data: {
+                list: errorArray
+            }
+        })
+    }
 
     // Get measurement Units list
     productModel.getMeasurementUnits(function(response) {
@@ -271,6 +286,47 @@ exports.getAllCategories = function(req, res) {
             })
         } else {
             // Return product categories list
+            res.send({
+                status: 'success',
+                data: response
+            })
+        }
+    })
+}
+
+// Get all subProducts to a product
+exports.getSubProducts = function(req, res) {
+    // Get required params
+    let businessId = req.userDetails.businessId
+    let productId = req.query.productId
+
+    debugger
+
+    let errorArray = []
+    if(!businessId) {errorArray.push({name: 'businessId', text: 'Missing user token.'})}
+    if(!productId) {errorArray.push({name: 'productId', text: 'Missing parent product Id.'})}
+
+    if(errorArray.length > 0 ) {
+        // If variables are missing
+        return res.status(400).send({
+            status: 'error',
+            message: 'Missing user token. Please check request.',
+            data: {
+                list: errorArray
+            }
+        })
+    }
+
+    // Getting subProduct list based on Id
+    productModel.getSubProducts(productId, function(response) {
+        if(response.error) {
+            res.status(400).send({
+                status: 'error',
+                message: response.text,
+                sqlMessage: response.sqlMessage ? response.sqlMessage : null
+            })
+        } else {
+            // Return response list
             res.send({
                 status: 'success',
                 data: response

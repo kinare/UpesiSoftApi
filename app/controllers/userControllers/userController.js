@@ -52,7 +52,7 @@ exports.login = function(req, res) {
         // If variables are missing
         return res.status(400).send({
             status: 'error',
-            message: 'Missing parameters.',
+            message: 'Missing parameters. Please check data list.',
             data: {
                 list: errorArray
             }
@@ -129,7 +129,7 @@ exports.signup = function(req, res) {
         // If variables are missing
         return res.status(400).send({
             status: 'error',
-            message: 'Missing parameters.',
+            message: 'Missing parameters. Please check data list.',
             data: {
                 list: errorArray
             }
@@ -212,7 +212,7 @@ exports.activate = function(req, res) {
         // If variables are missing
         return res.status(400).send({
             status: 'error',
-            message: 'Missing parameters.',
+            message: 'Missing parameters. Please check data list.',
             data: {
                 list: errorArray
             }
@@ -271,7 +271,7 @@ exports.resetInitiate = function(req, res) {
         // If variables are missing
         return res.status(400).send({
             status: 'error',
-            message: 'Missing parameters.',
+            message: 'Missing parameters. Please check data list.',
             data: {
                 list: errorArray
             }
@@ -351,7 +351,7 @@ exports.resetComplete = function(req, res) {
         // If variables are missing
         return res.status(400).send({
             status: 'error',
-            message: 'Missing parameters.',
+            message: 'Missing parameters. Please check data list.',
             data: {
                 list: errorArray
             }
