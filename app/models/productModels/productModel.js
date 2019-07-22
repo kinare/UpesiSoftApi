@@ -175,10 +175,98 @@ exports.getSubProducts = function(productId = null, callback) {
     });
 }
 
-exports.updateProduct = function(productId = null, updateDetails = null, callback) {
+exports.getProduct = function(productId = null, callback) {
+    let sql = "SELECT * FROM ?? WHERE ?? = ? AND ?? = ?";
+    
+    let inserts = ['products', 'state', 1, 'id', productId];
+    sql = mysql.format(sql, inserts);
 
+    pool.query(sql, function (error, results, fields) {
+        if (error) {
+            callback({
+                error: true,
+                text: 'There was an error retrieving the product.',
+                sqlMessage: error.sqlMessage 
+            })
+        } else {
+            if(results && results.length > 0) {
+                callback(results)
+            } else {
+                // No product exists
+                callback({
+                    error: true,
+                    text: 'There was no product with that ID found.'
+                })
+            }
+        }
+    });
 }
 
-exports.updateSubProductDetails = function(subProductId = null, updateDetails = null, callback) {
+exports.getSubProduct = function(subProductId = null, callback) {
+    let sql = "SELECT * FROM ?? WHERE ?? = ? AND ?? = ?";
     
+    let inserts = ['subProductList', 'state', 1, 'id', subProductId];
+    sql = mysql.format(sql, inserts);
+
+    pool.query(sql, function (error, results, fields) {
+        if (error) {
+            callback({
+                error: true,
+                text: 'There was an error retrieving the sub-product.',
+                sqlMessage: error.sqlMessage 
+            })
+        } else {
+            if(results && results.length > 0) {
+                callback(results)
+            } else {
+                // No product exists
+                callback({
+                    error: true,
+                    text: 'There was no sub-product with that ID found.'
+                })
+            }
+        }
+    });
+}
+
+exports.updateProduct = function(productId = null, updateDetails = null, callback) {
+    // If codes match, update entry
+    let sql = "UPDATE ?? SET ? WHERE ?? = ?";
+    
+    activateData.activationCode = null
+
+    let inserts = ['products', updateDetails, 'id', productId];
+    sql = mysql.format(sql, inserts);
+
+    pool.query(sql, function (error, results, fields) {
+        if (error) {
+            callback({
+                error: true,
+                text: 'There was an error updating the product.',
+                sqlMessage: error.sqlMessage
+            })
+        } else {
+            callback(results)
+        }
+    });    
+}
+
+exports.updateSubProduct = function(subProductId = null, updateDetails = null, callback) {
+    // If codes match, update entry
+    let sql = "UPDATE ?? SET ? WHERE ?? = ?";
+
+    let inserts = ['subProductList', updateDetails, 'id', subProductId];
+    sql = mysql.format(sql, inserts);
+
+    pool.query(sql, function (error, results, fields) {
+        if (error) {
+            callback({
+                error: true,
+                text: 'There was an error updating the sub-product.',
+                sqlMessage: error.sqlMessage
+            })
+        } else {
+            callback(results)
+        }
+    });    
 }

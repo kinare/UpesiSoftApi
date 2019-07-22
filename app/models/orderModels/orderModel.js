@@ -29,7 +29,7 @@ exports.newOrder = function(orderDetails = null, callback) {
 exports.insertOrderItems = function(orderItemsData = null, callback) {
     let sql = "INSERT INTO ?? (??) VALUES ?";
 
-    let inserts = ['orderItems', ['primaryProductId','measurement','measurementUnitId','state','createdAt','updatedAt'], subProductList];
+    let inserts = ['orderItems', ['orderId','productId','subProductId','sellAs','qty','soldMeasurement','measurementBefore','measurementAfter','price','state','createdAt','updatedAt'], orderItemsData];
     sql = mysql.format(sql, inserts);
 
     pool.query(sql, function (error, results, fields) {
@@ -41,6 +41,76 @@ exports.insertOrderItems = function(orderItemsData = null, callback) {
             })
         } else {
             callback(results)
+        }
+    });
+}
+
+exports.getOrders = function(businessId = null, orderType = null, orderId = null, orderStatus = null, callback) {
+    let sql = "SELECT orders.*, customers.customerFirstName, customers.customerLastName, customers.customerBusinessName, customers.customerEmail, customers.customerCountryCode, customers.customerPhoneNumber, customers.customerPostalAddress, customers.customerAddress, customers.isBusiness as customerIsBusiness, users.firstName as cashierFirstName, users.lastName as cashierLastName, users.email as cashierEmail, users.phoneCountryCode as cashierCountryCode, users.userPhoneNumber as cashierPhoneNumber FROM ?? LEFT JOIN ?? ON ?? = ?? LEFT JOIN ?? ON ?? = ?? WHERE ?? = ?";// AND ?? = ? AND ?? = ?";
+    
+    let inserts = ['orders', 'customers', 'orders.customerId', 'customers.id', 'users', 'orders.userId', 'users.id', 'orders.businessId', businessId]//, 'orderType', orderType, 'id', orderId];
+
+    if(orderType) {
+        sql += " AND orders.orderType = ?"
+        inserts.push(orderType)
+    }
+
+    if(orderId) {
+        sql += " AND orders.id = ?"
+        inserts.push(orderId)
+    }
+
+    if(orderStatus) {
+        sql += " AND orders.orderStatus = ?"
+        inserts.push(orderStatus)
+    }
+
+    sql = mysql.format(sql, inserts);
+
+    pool.query(sql, function (error, results, fields) {
+        if (error) {
+            callback({
+                error: true,
+                text: 'There was an error retrieving the order.',
+                sqlMessage: error.sqlMessage 
+            })
+        } else {
+            if(results && results.length > 0) {
+                callback(results)
+            } else {
+                // No product exists
+                callback({
+                    error: true,
+                    text: 'There were no orders found.'
+                })
+            }
+        }
+    });
+}
+
+exports.getOrderItems = function(orderId = null, callback) {
+    let sql = "SELECT * FROM ?? WHERE ?? = ?";
+    
+    let inserts = ['orderItems', 'state', 1];
+    sql = mysql.format(sql, inserts);
+
+    pool.query(sql, function (error, results, fields) {
+        if (error) {
+            callback({
+                error: true,
+                text: 'There was an error retrieving the order item(s).',
+                sqlMessage: error.sqlMessage 
+            })
+        } else {
+            if(results && results.length > 0) {
+                callback(results)
+            } else {
+                // No order item(s) exists
+                callback({
+                    error: true,
+                    text: 'There were no order item(s) found.'
+                })
+            }
         }
     });
 }
