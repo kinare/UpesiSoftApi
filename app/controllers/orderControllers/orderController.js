@@ -125,7 +125,9 @@ exports.new = function(req, res) {
                 if(itemsInsertResponse.insertId) {
                     res.send({
                         status: 'success',
-                        data: null
+                        data: {
+                            orderId: response.insertId
+                        }
                     })
                 } else {
                     // No order items inserted
@@ -152,9 +154,9 @@ exports.getOrders = function(req, res) {
     // Get by type, ID etc
     // Get params
     let businessId = req.userDetails.businessId
-    let orderType = req.body['orderType'] ? req.body['orderType'] : null
-    let orderId = req.body['orderId'] ? req.body['orderId'] : null
-    let orderStatus = req.body['orderStatus'] ? req.body['orderStatus'] : null
+    let orderType = req.query.orderType ? req.query.orderType : null
+    let orderId = req.query.orderId ? req.query.orderId : null
+    let orderStatus = req.query.orderStatus ? req.query.orderStatus : null
 
     // Checking all parameters are available
     let errorArray = []
