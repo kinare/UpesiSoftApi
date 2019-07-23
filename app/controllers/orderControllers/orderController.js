@@ -42,8 +42,6 @@ exports.new = function(req, res) {
         })
     }
 
-    let orderItemCount = orderItems.length
-
     let orderDetails = {
         businessId: businessId,
         userId: userId,
