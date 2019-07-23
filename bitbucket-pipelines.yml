@@ -18,4 +18,11 @@ pipelines:
         # trigger: manual  # Uncomment to make this a manual deployment.
         script:
           - echo "Deploying to production environment"
+          - pipe: atlassian/ssh-run:0.2.2
+            variables:
+              SSH_USER: 'd4a'
+              SERVER: '108.61.86.53'
+              MODE: 'script'
+              COMMAND: 'productionDeploy.sh'
+
 
