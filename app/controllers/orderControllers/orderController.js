@@ -6,8 +6,8 @@ exports.new = function(req, res) {
     // Get params
     let businessId = req.userDetails.businessId
     let userId = req.userDetails.id
-    let customerId = req.body['customerId']
-    let customerDetails = req.body['customerDetails'] // An object
+    let customerId = req.body['customerId'] 
+    let customerDetails = JSON.parse(req.body['customerDetails']) ? JSON.parse(req.body['customerDetails']) : null// An object
     let total = req.body['total']
     let paymentMethod = req.body['paymentMethod']
     let orderType = req.body['orderType'] // Quoatation, Invoice, Order
@@ -19,7 +19,6 @@ exports.new = function(req, res) {
     let errorArray = []
     if(!businessId) {errorArray.push({name: 'businessId', text: 'Missing user token.'})}
     if(!userId) {errorArray.push({name: 'userId', text: 'Missing user token.'})}
-    if(!customerDetails && !customerId) {errorArray.push({name: 'customerDetails', text: 'Missing customer details or customer ID. Please supply either.'})}
     if(!total) {errorArray.push({name: 'total', text: 'Missing total price.'})}
     if(!paymentMethod) {errorArray.push({name: 'paymentMethod', text: 'Missing payment method.'})}
     if(!orderType) {errorArray.push({name: 'orderType', text: 'Missing order type.'})}
@@ -42,8 +41,8 @@ exports.new = function(req, res) {
     let orderDetails = {
         businessId: businessId,
         userId: userId,
-        customerId: customerId,
-        customerDetails: customerDetails,
+        customerId: customerId ? customerId : null,
+        customerDetails: customerDetails ? customerDetails : null,
         total: total,
         paymentMethod: paymentMethod,
         orderType: orderType,
@@ -66,8 +65,6 @@ exports.new = function(req, res) {
 
                 if(item.sellAs === "CUSTOM") {
                     // Required data: subProductId, productId, soldMeasurement
-                    // ['orderId','productId','subProductId','sellAs','qty','soldMeasurement','measurementBefore','measurementAfter','price','state','createdAt','updatedAt']
-                    // {productId: 23,subProductId: 19,sellAs: 'CUSTOM',soldMeasurement: 25,measurementBefore: 100,measurementAfter: 75,price: 1250}
                     insertOrderItemDetails = [response.insertId,item.productId,item.subProductId,item.sellAs,null,item.soldMeasurement,item.measurementBefore,item.measurementAfter,item.price,1,moment().format('YYYY-MM-DD HH:mm:ss'),moment().format('YYYY-MM-DD HH:mm:ss')]
 
                     // Update product details i.e. update measurements & qty etc
