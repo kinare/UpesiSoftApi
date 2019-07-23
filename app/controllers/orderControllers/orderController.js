@@ -13,7 +13,7 @@ exports.new = function(req, res) {
     let orderType = req.body['orderType'] // Quoatation, Invoice, Order
     let orderStatus = req.body['orderStatus'] // Pending, Paid
     let orderItems = req.body['orderItems'] // An array of objects
-    // orderItems = JSON.parse(orderItems) ? JSON.parse(orderItems) : null
+    orderItems = JSON.parse(orderItems) ? JSON.parse(orderItems) : null
 
     // Checking all parameters are available
     let errorArray = []
