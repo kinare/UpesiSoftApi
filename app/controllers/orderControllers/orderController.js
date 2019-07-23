@@ -14,6 +14,8 @@ exports.new = function(req, res) {
     let orderStatus = req.body['orderStatus'] // Pending, Paid
     let orderItems = req.body['orderItems'] // An array of objects
     orderItems = JSON.parse(orderItems) ? JSON.parse(orderItems) : null
+    let tendered = req.body['tendered']
+    let change = req.body['change']
 
     // Checking all parameters are available
     let errorArray = []
@@ -24,6 +26,10 @@ exports.new = function(req, res) {
     if(!orderType) {errorArray.push({name: 'orderType', text: 'Missing order type.'})}
     if(!orderStatus) {errorArray.push({name: 'orderStatus', text: 'Missing order status.'})}
     if(!orderItems || orderItems.length < 1) {errorArray.push({name: 'orderItems', text: 'Missing order item information.'})}
+    if(paymentMethod === 'CASH') {
+        if(!tendered) {errorArray.push({name: 'tendered', text: 'Missing cash tendered value.'})}
+        if(!change) {errorArray.push({name: 'change', text: 'Missing change value.'})}
+    }
 
     if(errorArray.length > 0 ) {
         // If variables are missing
@@ -44,6 +50,8 @@ exports.new = function(req, res) {
         customerId: customerId ? customerId : null,
         customerDetails: customerDetails ? customerDetails : null,
         total: total,
+        tenderedAmount: tendered ? tendered : 0.00,
+        changeAmount: change ? change : 0.00,
         paymentMethod: paymentMethod,
         orderType: orderType,
         orderStatus: orderStatus,
