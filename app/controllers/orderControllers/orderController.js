@@ -60,29 +60,29 @@ exports.new = function(req, res) {
             let orderList = []
 
             // Loop into list
-            for(let i = 0; i < orderItemCount; i++) {
+            orderItems.forEach(item => {
                 // Check what type of product it is
                 let insertOrderItemDetails = []
 
-                if(orderItems[i].sellAs === "CUSTOM") {
+                if(item.sellAs === "CUSTOM") {
                     // Required data: subProductId, productId, soldMeasurement
                     // ['orderId','productId','subProductId','sellAs','qty','soldMeasurement','measurementBefore','measurementAfter','price','state','createdAt','updatedAt']
                     // {productId: 23,subProductId: 19,sellAs: 'CUSTOM',soldMeasurement: 25,measurementBefore: 100,measurementAfter: 75,price: 1250}
-                    insertOrderItemDetails = [response.insertId,orderItems[i].productId,orderItems[i].subProductId,orderItems[i].sellAs,null,orderItems[i].soldMeasurement,orderItems[i].measurementBefore,orderItems[i].measurementAfter,orderItems[i].price,1,moment().format('YYYY-MM-DD HH:mm:ss'),moment().format('YYYY-MM-DD HH:mm:ss')]
+                    insertOrderItemDetails = [response.insertId,item.productId,item.subProductId,item.sellAs,null,item.soldMeasurement,item.measurementBefore,item.measurementAfter,item.price,1,moment().format('YYYY-MM-DD HH:mm:ss'),moment().format('YYYY-MM-DD HH:mm:ss')]
 
                     // Update product details i.e. update measurements & qty etc
                     // Update sub product details
                     // Get product details
-                    productModel.getSubProduct(orderItems[i].subProductId, function(subProductResponse) {
+                    productModel.getSubProduct(item.subProductId, function(subProductResponse) {
                         // If there is a product
                         if(!subProductResponse.error && subProductResponse) {
                             // Update product details i.e. update measurements & qty etc
                             let subProductUpdateDetails = {
-                                measurement: orderItems[i].measurementAfter
+                                measurement: item.measurementAfter
                             }
         
                             // Update product
-                            productModel.updateSubProduct(orderItems[i].subProductId, subProductUpdateDetails, function(updateSubProductResponse) {
+                            productModel.updateSubProduct(item.subProductId, subProductUpdateDetails, function(updateSubProductResponse) {
                                 if(updateSubProductResponse.affectedRows > 0) {
                                     console.log('Sub product updated.')
                                 } else {
@@ -94,19 +94,19 @@ exports.new = function(req, res) {
 
                 } else {
                     // If full, check: qty, productId
-                    insertOrderItemDetails = [response.insertId,orderItems[i].productId,null,orderItems[i].sellAs,orderItems[i].qty,null,null,null,orderItems[i].price,1,moment().format('YYYY-MM-DD HH:mm:ss'),moment().format('YYYY-MM-DD HH:mm:ss')]
+                    insertOrderItemDetails = [response.insertId,item.productId,null,item.sellAs,item.qty,null,null,null,item.price,1,moment().format('YYYY-MM-DD HH:mm:ss'),moment().format('YYYY-MM-DD HH:mm:ss')]
 
                     // Get product details
-                    productModel.getProduct(orderItems[i].productId, function(productResponse) {
+                    productModel.getProduct(item.productId, function(productResponse) {
                         // If there is a product
                         if(!productResponse.error && productResponse) {
                             // Update product details i.e. update measurements & qty etc
                             let productUpdateDetails = {
-                                qty: productResponse[0].qty - orderItems[i].qty
+                                qty: productResponse[0].qty - item.qty
                             }
         
                             // Update product
-                            productModel.updateProduct(orderItems[i].productId, productUpdateDetails, function(updateProductResponse) {
+                            productModel.updateProduct(item.productId, productUpdateDetails, function(updateProductResponse) {
                                 if(updateProductResponse.affectedRows > 0) {
                                     console.log('Product updated.')
                                 } else {
@@ -118,7 +118,7 @@ exports.new = function(req, res) {
                 }
 
                 orderList.push(insertOrderItemDetails)
-            }
+            });
 
             // Inserting order items
             orderModel.insertOrderItems(orderList, function(itemsInsertResponse) {
