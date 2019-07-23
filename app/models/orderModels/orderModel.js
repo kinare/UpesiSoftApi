@@ -89,9 +89,9 @@ exports.getOrders = function(businessId = null, orderType = null, orderId = null
 }
 
 exports.getOrderItems = function(orderId = null, callback) {
-    let sql = "SELECT * FROM ?? WHERE ?? = ?";
+    let sql = "SELECT * FROM ?? WHERE ?? = ? AND ?? = ?";
     
-    let inserts = ['orderItems', 'state', 1];
+    let inserts = ['orderItems', 'orderId', orderId, 'state', 1];
     sql = mysql.format(sql, inserts);
 
     pool.query(sql, function (error, results, fields) {
