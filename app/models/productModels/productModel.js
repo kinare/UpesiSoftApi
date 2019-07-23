@@ -232,8 +232,6 @@ exports.getSubProduct = function(subProductId = null, callback) {
 exports.updateProduct = function(productId = null, updateDetails = null, callback) {
     // If codes match, update entry
     let sql = "UPDATE ?? SET ? WHERE ?? = ?";
-    
-    activateData.activationCode = null
 
     let inserts = ['products', updateDetails, 'id', productId];
     sql = mysql.format(sql, inserts);
