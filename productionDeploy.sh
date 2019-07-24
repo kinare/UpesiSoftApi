@@ -2,11 +2,9 @@
 
 root="/var/www/api.upesisoft.com/html"
 
-ls -l
-
 cd /var/www/api.upesisoft.com/html
 
-ls -l
+git status
 
 #git pull origin master
 
