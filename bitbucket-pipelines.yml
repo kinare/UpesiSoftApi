@@ -22,8 +22,8 @@ pipelines:
             variables:
               SSH_USER: 'd4a'
               SERVER: '108.61.86.53'
-              #MODE: 'script'
-              COMMAND: 'ls -l'
-              #COMMAND: 'productionDeploy.sh'
+              MODE: 'script'
+              #COMMAND: 'ls -l'
+              COMMAND: 'productionDeploy.sh'
 
 
