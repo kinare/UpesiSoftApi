@@ -2,12 +2,16 @@
 
 root="/var/www/api.upesisoft.com/html"
 
-cd $root
+ls -l
 
-git pull origin master
+cd /var/www/api.upesisoft.com/html
 
-npm install
+ls -l
 
-pm2 restart 1
+#git pull origin master
 
-echo -e 'Deployment successful'
+#npm install
+
+#pm2 restart 1
+
+#echo -e 'Deployment successful'
