@@ -4,12 +4,12 @@ root="/var/www/api.upesisoft.com/html"
 
 cd /var/www/api.upesisoft.com/html
 
-git status
+#git status
 
-#git pull origin master
+git pull origin master
 
-#npm install
+npm install
 
-#pm2 restart 1
+pm2 restart 1
 
-#echo -e 'Deployment successful'
+echo -e 'Deployment successful'
