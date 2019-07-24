@@ -24,6 +24,6 @@ pipelines:
               SERVER: '108.61.86.53'
               MODE: 'script'
               #COMMAND: 'ls -l'
-              COMMAND: 'productionDeploy.sh'
+              COMMAND: './deployApi.sh'
 
 
