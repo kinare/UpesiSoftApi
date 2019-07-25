@@ -47,8 +47,8 @@ exports.new = function(req, res) {
     let availableFrom = req.body['availableFrom']
     let availableTo = req.body['availableTo']
     let sku = req.body['sku']
-    let price = req.body['price']
-    let salePrice = req.body['salePrice']
+    let price = parseFloat(req.body['price']) ? parseFloat(req.body['price']) : 0.00
+    let salePrice = parseFloat(req.body['salePrice']) ? parseFloat(req.body['salePrice']) : 0.00
     let measurementUnitId = req.body['measurementUnitId']
     let taxClassId = req.body['taxClassId']
     let published = req.body['published']
@@ -65,7 +65,7 @@ exports.new = function(req, res) {
     if(!productDescription) {errorArray.push({name: 'productDescription', text: 'Missing product description.'})}
     if(!productShortDescription) {errorArray.push({name: 'productShortDescription', text: 'Missing product short description.'})}
     if(!categories) {errorArray.push({name: 'categories', text: 'Missing product categories.'})}
-    if(!price) {errorArray.push({name: 'price', text: 'Missing product price.'})}
+    if(!price && typeof price !== 'number') {errorArray.push({name: 'price', text: 'Missing product price.'})}
     if(!measurementUnitId) {errorArray.push({name: 'measurementUnitId', text: 'Missing measurement unit.'})}
     if(!published) {errorArray.push({name: 'published', text: 'Missing published field.'})}
     if(!sellAs) {errorArray.push({name: 'sellAs', text: 'Missing sellAs field.'})}
