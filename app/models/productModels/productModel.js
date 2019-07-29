@@ -9,9 +9,9 @@ let pool  = mysql.createPool({
 
 // Get all products
 exports.getAll = function(businessId = null, callback) {
-    let sql = "SELECT products.*, measurementUnits.measurementName, measurementUnits.measurementAbbreviation FROM ?? LEFT JOIN ?? ON ?? = ?? WHERE ?? = ? AND ?? = ?";
+    let sql = "SELECT products.*, measurementUnits.measurementName, measurementUnits.measurementAbbreviation, productCategories.productCategoryName, productCategories.parentId as productCategoryParentId FROM ?? LEFT JOIN ?? ON ?? = ?? LEFT JOIN ?? ON ?? = ?? WHERE ?? = ? AND ?? = ?";
     
-    let inserts = ['products', 'measurementUnits', 'products.measurementUnitId', 'measurementUnits.id', 'businessId', businessId, 'products.state', 1];
+    let inserts = ['products', 'measurementUnits', 'products.measurementUnitId', 'measurementUnits.id', 'productCategories', 'products.productCategoryId', 'productCategories.id', 'products.businessId', businessId, 'products.state', 1];
     sql = mysql.format(sql, inserts);
 
     pool.query(sql, function (error, results, fields) {
