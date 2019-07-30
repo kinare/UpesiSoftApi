@@ -49,7 +49,7 @@ exports.new = function(req, res) {
     let customerAddress = req.body['customerAddress']
     let customerPhoneNumber = req.body['customerPhoneNumber']
     let isBusiness = parseInt(req.body['isBusiness']) ? parseInt(req.body['isBusiness']) : 0
-    let customerKraPin = req.body['customerKraPin']
+    let kraPin = req.body['kraPin']
 
     let errorArray = []
     if(!businessId) {errorArray.push({name: 'businessId', text: 'Missing user token.'})}
@@ -86,7 +86,7 @@ exports.new = function(req, res) {
         customerPostalAddress: customerPostalAddress ? customerPostalAddress : null,
         customerAddress: customerAddress ? customerAddress : null,
         customerPhoneNumber: customerPhoneNumber,
-        customerKraPin: customerKraPin ? customerKraPin : null,
+        kraPin: kraPin ? kraPin : null,
         isBusiness: isBusiness ? isBusiness : typeof isBusiness === "number" ? isBusiness : 0,
         createdAt: moment().format('YYYY-MM-DD HH:mm:ss'),
         updatedAt: moment().format('YYYY-MM-DD HH:mm:ss')

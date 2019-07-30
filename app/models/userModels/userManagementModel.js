@@ -44,3 +44,31 @@ exports.createUserRole = function (userRoleDetails = null, callback) {
         }
     });
 }
+
+// Get all users
+exports.getAllUsers = function(businessId = null, callback) {
+    let sql = "SELECT * FROM ?? WHERE ?? = ? AND ?? = ?";
+    
+    let inserts = ['users', 'businessId', businessId, 'state', 1];
+    sql = mysql.format(sql, inserts);
+
+    pool.query(sql, function (error, results, fields) {
+        if (error) {
+            callback({
+                error: true,
+                text: 'There was an error retrieving the user list.',
+                sqlMessage: error.sqlMessage 
+            })
+        } else {
+            if(results && results.length > 0) {
+                callback(results)
+            } else {
+                // No users exists
+                callback({
+                    error: true,
+                    text: 'There were no users found.'
+                })
+            }
+        }
+    });
+}

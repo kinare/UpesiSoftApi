@@ -82,6 +82,39 @@ exports.createUser = function(req, res) {
 
 // Get all users
 exports.getAllUsers = function(req, res) {
+    // Checking all parameters are available
+    let businessId = req.userDetails.businessId
+
+    let errorArray = []
+    if(!businessId) {errorArray.push({name: 'businessId', text: 'Missing user token.'})}
+
+    if(errorArray.length > 0 ) {
+        // If variables are missing
+        return res.status(400).send({
+            status: 'error',
+            message: 'Missing user token. Please check request.',
+            data: {
+                list: errorArray
+            }
+        })
+    }
+
+    // Proceed to get user list
+    userManagementModel.getAllUsers(businessId, function(response) {
+        if(response.error) {
+            res.status(400).send({
+                status: 'error',
+                message: response.text,
+                sqlMessage: response.sqlMessage ? response.sqlMessage : null
+            })
+        } else {
+            // Return response list
+            res.send({
+                status: 'success',
+                data: response
+            })
+        }
+    })
 
 }
 
@@ -171,5 +204,21 @@ exports.createRole = function(req, res) {
 
 // Get all user roles
 exports.getAllUserRoles = function(req, res) {
+    // Checking all parameters are available
+    let businessId = req.userDetails.businessId
+
+    let errorArray = []
+    if(!businessId) {errorArray.push({name: 'businessId', text: 'Missing user token.'})}
+
+    if(errorArray.length > 0 ) {
+        // If variables are missing
+        return res.status(400).send({
+            status: 'error',
+            message: 'Missing user token. Please check request.',
+            data: {
+                list: errorArray
+            }
+        })
+    }
 
 }
