@@ -40,7 +40,8 @@ app.use(function(err, req, res, next) {
 	res.send({
 		status: 'error',
 		message: err.message ? err.message : 'There was an error handling your request. Please contact an admin if the issue persists.',
-		errorCode: err.status ? err.status : 500
+		errorCode: err.status ? err.status : 500,
+		requestDetails: req.body
 	});
 });
 
