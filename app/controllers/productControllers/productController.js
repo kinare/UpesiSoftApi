@@ -43,7 +43,7 @@ exports.new = function(req, res) {
     let productName = req.body['productName']
     let productDescription = req.body['productDescription']
     let productShortDescription = req.body['productShortDescription']
-    let categories = req.body['categories']
+    let categoryId = req.body['categoryId']
     let availableFrom = req.body['availableFrom']
     let availableTo = req.body['availableTo']
     let sku = req.body['sku']
@@ -64,7 +64,7 @@ exports.new = function(req, res) {
     if(!productName) {errorArray.push({name: 'productName', text: 'Missing product name.'})}
     if(!productDescription) {errorArray.push({name: 'productDescription', text: 'Missing product description.'})}
     if(!productShortDescription) {errorArray.push({name: 'productShortDescription', text: 'Missing product short description.'})}
-    if(!categories) {errorArray.push({name: 'categories', text: 'Missing product categories.'})}
+    if(!categoryId) {errorArray.push({name: 'categoryId', text: 'Missing product category Id.'})}
     if(!price && typeof price !== 'number') {errorArray.push({name: 'price', text: 'Missing product price.'})}
     if(!measurementUnitId) {errorArray.push({name: 'measurementUnitId', text: 'Missing measurement unit.'})}
     if(!published) {errorArray.push({name: 'published', text: 'Missing published field.'})}
@@ -94,7 +94,7 @@ exports.new = function(req, res) {
         productName: productName,
         productDescription: productDescription,
         productShortDescription: productShortDescription,
-        categories: categories,
+        productCategoryId: categoryId ? categoryId : null,
         availableFrom: availableFrom ? availableFrom : null,
         availableTo: availableTo ? availableTo : null,
         sku: sku ? sku : null,

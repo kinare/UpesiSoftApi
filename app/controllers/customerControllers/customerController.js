@@ -49,6 +49,7 @@ exports.new = function(req, res) {
     let customerAddress = req.body['customerAddress']
     let customerPhoneNumber = req.body['customerPhoneNumber']
     let isBusiness = parseInt(req.body['isBusiness']) ? parseInt(req.body['isBusiness']) : 0
+    let customerKraPin = req.body['customerKraPin']
 
     let errorArray = []
     if(!businessId) {errorArray.push({name: 'businessId', text: 'Missing user token.'})}
@@ -59,7 +60,7 @@ exports.new = function(req, res) {
         if(!customerFirstName) {errorArray.push({name: 'customerFirstName', text: 'Missing customer first name.'})}
         if(!customerLastName) {errorArray.push({name: 'customerLastName', text: 'Missing customer last name.'})}
     }
-    if(!customerEmail) {errorArray.push({name: 'customerEmail', text: 'Missing customer email.'})}
+    // if(!customerEmail) {errorArray.push({name: 'customerEmail', text: 'Missing customer email.'})}
     if(!customerCountryCode) {errorArray.push({name: 'customerCountryCode', text: 'Missing country code.'})}
     if(!customerPhoneNumber) {errorArray.push({name: 'customerPhoneNumber', text: 'Missing phone number.'})}
 
@@ -80,11 +81,12 @@ exports.new = function(req, res) {
         customerFirstName: customerFirstName ? customerFirstName : null,
         customerLastName: customerLastName ? customerLastName : null,
         customerBusinessName: customerBusinessName ? customerBusinessName : null,
-        customerEmail: customerEmail,
+        customerEmail: customerEmail ? customerEmail : null,
         customerCountryCode: customerCountryCode,
         customerPostalAddress: customerPostalAddress ? customerPostalAddress : null,
         customerAddress: customerAddress ? customerAddress : null,
         customerPhoneNumber: customerPhoneNumber,
+        customerKraPin: customerKraPin ? customerKraPin : null,
         isBusiness: isBusiness ? isBusiness : typeof isBusiness === "number" ? isBusiness : 0,
         createdAt: moment().format('YYYY-MM-DD HH:mm:ss'),
         updatedAt: moment().format('YYYY-MM-DD HH:mm:ss')

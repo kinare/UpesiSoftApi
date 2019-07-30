@@ -80,6 +80,11 @@ exports.createUser = function(req, res) {
 
 }
 
+// Get all users
+exports.getAllUsers = function(req, res) {
+
+}
+
 // Create new user role - set up permissions and user role details
 exports.createRole = function(req, res) {
     // Getting parameters
@@ -162,4 +167,9 @@ exports.createRole = function(req, res) {
             })
         }
     })
+}
+
+// Get all user roles
+exports.getAllUserRoles = function(req, res) {
+
 }
