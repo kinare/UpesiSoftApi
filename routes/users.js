@@ -13,6 +13,7 @@ router.post('/v1/users/reset/complete', userController.resetComplete);
 // User Management Routes - Business
 router.post('/v1/b/users/create', userController.verifyUserToken, userManagement.createUser)
 router.post('/v1/b/roles/create', userController.verifyUserToken, userManagement.createRole)
-router.get('/v1/users/get', userController.verifyUserToken, userManagement.getAllUsers)
+router.get('/v1/b/users/get', userController.verifyUserToken, userManagement.getAllUsers)
+router.get('/v1/b/roles/get', userController.verifyUserToken, userManagement.getAllUserRoles)
 
 module.exports = router;

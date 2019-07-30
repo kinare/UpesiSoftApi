@@ -115,7 +115,6 @@ exports.getAllUsers = function(req, res) {
             })
         }
     })
-
 }
 
 // Create new user role - set up permissions and user role details
@@ -221,4 +220,20 @@ exports.getAllUserRoles = function(req, res) {
         })
     }
 
+    // Proceed to get user list
+    userManagementModel.getAllUserRoles(businessId, function(response) {
+        if(response.error) {
+            res.status(400).send({
+                status: 'error',
+                message: response.text,
+                sqlMessage: response.sqlMessage ? response.sqlMessage : null
+            })
+        } else {
+            // Return response list
+            res.send({
+                status: 'success',
+                data: response
+            })
+        }
+    })
 }

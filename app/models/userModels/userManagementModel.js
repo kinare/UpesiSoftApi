@@ -72,3 +72,32 @@ exports.getAllUsers = function(businessId = null, callback) {
         }
     });
 }
+
+// Get all users
+exports.getAllUserRoles = function(businessId = null, callback) {
+    let sql = "SELECT * FROM ?? LEFT JOIN ?? ON ?? = ?? WHERE ?? = ? OR ?? IS NULL AND ?? = ?";
+    
+    let inserts = ['userRoles', 'userPermissions', 'userPermissions.id', 'userRoles.userPermissionsId', 'businessId', businessId, 'businessId', 'state', 1];
+    sql = mysql.format(sql, inserts);
+    console.log(sql)
+
+    pool.query(sql, function (error, results, fields) {
+        if (error) {
+            callback({
+                error: true,
+                text: 'There was an error retrieving the user roles list.',
+                sqlMessage: error.sqlMessage 
+            })
+        } else {
+            if(results && results.length > 0) {
+                callback(results)
+            } else {
+                // No users exists
+                callback({
+                    error: true,
+                    text: 'There were no user roles found.'
+                })
+            }
+        }
+    });
+}
