@@ -47,9 +47,9 @@ exports.createUserRole = function (userRoleDetails = null, callback) {
 
 // Get all users
 exports.getAllUsers = function(businessId = null, callback) {
-    let sql = "SELECT * FROM ?? WHERE ?? = ? AND ?? = ?";
+    let sql = "SELECT users.id, users.firstName, users.LastName, users.email, users.phoneCountryCode, users.userPhoneNumber, users.roleId, users.businessId, users.profilePicture, users.createdAt, users.updatedAt, userRoles.roleName, userRoles.roleType, userRoles.roleDescription FROM ?? LEFT JOIN ?? ON ?? = ?? WHERE ?? = ? AND ?? = ?";
     
-    let inserts = ['users', 'businessId', businessId, 'state', 1];
+    let inserts = ['users', 'userRoles', 'userRoles.id', 'users.roleId', 'users.businessId', businessId, 'users.state', 1];
     sql = mysql.format(sql, inserts);
 
     pool.query(sql, function (error, results, fields) {
@@ -75,11 +75,10 @@ exports.getAllUsers = function(businessId = null, callback) {
 
 // Get all users
 exports.getAllUserRoles = function(businessId = null, callback) {
-    let sql = "SELECT * FROM ?? LEFT JOIN ?? ON ?? = ?? WHERE ?? = ? OR ?? IS NULL AND ?? = ?";
+    let sql = "SELECT userRoles.id, userRoles.roleName, userRoles.roleType, userRoles.roleDescription, userRoles.userPermissionsId, userRoles.createdAt, userRoles.updatedAt, userPermissions.createUsers, userPermissions.editUsers, userPermissions.viewUsers, userPermissions.createProducts, userPermissions.editProducts, userPermissions.viewProducts, userPermissions.makeSales FROM ?? LEFT JOIN ?? ON ?? = ?? WHERE ?? = ? OR ?? IS NULL AND ?? = ?";
     
     let inserts = ['userRoles', 'userPermissions', 'userPermissions.id', 'userRoles.userPermissionsId', 'businessId', businessId, 'businessId', 'state', 1];
     sql = mysql.format(sql, inserts);
-    console.log(sql)
 
     pool.query(sql, function (error, results, fields) {
         if (error) {
