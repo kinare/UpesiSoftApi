@@ -47,7 +47,7 @@ exports.createUserRole = function (userRoleDetails = null, callback) {
 
 // Get all users
 exports.getAllUsers = function(businessId = null, callback) {
-    let sql = "SELECT users.id, users.firstName, users.LastName, users.email, users.phoneCountryCode, users.userPhoneNumber, users.roleId, users.businessId, users.profilePicture, users.createdAt, users.updatedAt, userRoles.roleName, userRoles.roleType, userRoles.roleDescription FROM ?? LEFT JOIN ?? ON ?? = ?? WHERE ?? = ? AND ?? = ?";
+    let sql = "SELECT users.id, users.firstName, users.lastName, users.email, users.phoneCountryCode, users.userPhoneNumber, users.roleId, users.businessId, users.profilePicture, users.createdAt, users.updatedAt, userRoles.roleName, userRoles.roleType, userRoles.roleDescription FROM ?? LEFT JOIN ?? ON ?? = ?? WHERE ?? = ? AND ?? = ?";
     
     let inserts = ['users', 'userRoles', 'userRoles.id', 'users.roleId', 'users.businessId', businessId, 'users.state', 1];
     sql = mysql.format(sql, inserts);

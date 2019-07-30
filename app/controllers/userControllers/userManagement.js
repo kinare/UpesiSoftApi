@@ -122,6 +122,7 @@ exports.createRole = function(req, res) {
     // Getting parameters
     let roleName = req.body['roleName']
     let businessId = req.userDetails.businessId
+    let roleDescription = req.body['roleDescription']
 
     // Getting permissions
     let createUsers = req.body['createUsers']
@@ -165,6 +166,7 @@ exports.createRole = function(req, res) {
             let userRoleDetails = {
                 roleName: roleName,
                 roleType: roleName.toLowerCase().replace(' ', '_'),
+                roleDescription: roleDescription ? roleDescription : null,
                 businessId: businessId,
                 userPermissionsId: permissionsResponse.insertId,
                 createdAt: moment().format('YYYY-MM-DD HH:mm:ss'),
