@@ -18,21 +18,21 @@ exports.verifyUserToken = function(req, res, next) {
                         req.userDetails = response[0]
                         next()
                     } else {
-                        res.send({
+                        res.status(400).send({
                             status: 'error',
                             message: 'There was an error verifying the user. Please ensure that the token has not been tampered with.'
                         })
                     }
                 })
             } else {
-                res.send({
+                res.status(400).send({
                     status: 'error',
                     message: 'There was an error verifying the user. Please ensure that the token has not been tampered with.'
                 })
             }
         })
     }catch(e){
-        res.send({
+        res.status(400).send({
             status: 'error',
             message: 'There was an error verifying the user.'
         })
@@ -64,7 +64,7 @@ exports.login = function(req, res) {
         if(response.error) {
             res.status(400).send({
                 status: 'error',
-                message: response.text
+                message: response.text ? response.text : 'There was an error login the user. Please contact support if the issue persists.'
             })
         } else {
             // Get user token
