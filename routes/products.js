@@ -5,7 +5,7 @@ const productController = require('../app/controllers/productControllers/product
 const imageController = require('../app/controllers/imageControllers/imageController')
 var multer = require('multer')
 const upload = multer({
-    dest: "/var/www/html/cdn/upesisoft/images"
+    dest: "/var/www/cdnupesisoft.com/html/images"
 });
 
 router.get('/v1/products/get/all', userController.verifyUserToken, productController.getAll)
