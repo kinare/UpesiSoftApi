@@ -14,7 +14,7 @@ exports.getAll = function(req, res) {
         // If variables are missing
         return res.status(400).send({
             status: 'error',
-            message: 'Missing user token. Please check request.',
+            message: 'Request not fulfilled. There was some missing information.',
             data: {
                 list: errorArray
             }
@@ -193,7 +193,7 @@ exports.getMeasurementUnits = function(req, res) {
         // If variables are missing
         return res.status(400).send({
             status: 'error',
-            message: 'Missing user token. Please check request.',
+            message: 'Request not fulfilled. There was some missing information.',
             data: {
                 list: errorArray
             }
@@ -236,7 +236,7 @@ exports.createCategory = function(req, res) {
         // If variables are missing
         return res.status(400).send({
             status: 'error',
-            message: 'Missing user token. Please check request.',
+            message: 'Request not fulfilled. There was some missing information.',
             data: {
                 list: errorArray
             }
@@ -290,7 +290,7 @@ exports.getAllCategories = function(req, res) {
         // If variables are missing
         return res.status(400).send({
             status: 'error',
-            message: 'Missing user token. Please check request.',
+            message: 'Request not fulfilled. There was some missing information.',
             data: {
                 list: errorArray
             }
@@ -331,7 +331,7 @@ exports.getSubProducts = function(req, res) {
         // If variables are missing
         return res.status(400).send({
             status: 'error',
-            message: 'Missing user token. Please check request.',
+            message: 'Request not fulfilled. There was some missing information.',
             data: {
                 list: errorArray
             }

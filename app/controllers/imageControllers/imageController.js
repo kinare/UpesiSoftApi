@@ -20,7 +20,7 @@ exports.uploadProductImage = function(req, res) {
         // If variables are missing
         return res.status(400).send({
             status: 'error',
-            message: 'Missing user token. Please check request.',
+            message: 'Request not fulfilled. There was some missing information.',
             data: {
                 list: errorArray
             }
