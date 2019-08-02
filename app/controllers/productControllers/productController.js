@@ -222,8 +222,8 @@ exports.getMeasurementUnits = function(req, res) {
 exports.createCategory = function(req, res) {
     // Get params
     let businessId = req.userDetails.businessId
-    let productCategoryName = req.body['name']
-    let productCategoryDesc = req.body['description']
+    let productCategoryName = req.body['productCategoryName']
+    let productCategoryDesc = req.body['productCategoryDesc']
     let parentId = req.body['parentId']
 
     // Check if all required parameters were passed
