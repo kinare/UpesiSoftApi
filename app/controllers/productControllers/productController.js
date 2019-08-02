@@ -51,7 +51,7 @@ exports.new = function(req, res) {
     let availableTo = req.body['availableTo']
     let sku = req.body['sku']
     let price = parseFloat(req.body['price']) ? parseFloat(req.body['price']) : 0.00
-    let salePrice = parseFloat(req.body['salePrice']) ? parseFloat(req.body['salePrice']) : 0.00
+    let salePrice = parseFloat(req.body['salePrice']) ? parseFloat(req.body['salePrice']) : null
     let measurementUnitId = req.body['measurementUnitId']
     let taxClassId = req.body['taxClassId']
     let published = req.body['published']
@@ -93,9 +93,9 @@ exports.new = function(req, res) {
     }
 
     // Insert product image
-    const targetPath = path.normalize('/var/www/cdn.upesisoft.com/html/images/' + productImage.filename + path.extname(productImage.originalname).toLowerCase())
+    const targetPath = path.normalize('/var/www/cdn.upesisoft.com/html/images/products/' + productImage.filename + path.extname(productImage.originalname).toLowerCase())
     const tempPath = productImage.path
-    let productImageUrl = productImage ? 'https://cdn.upesisoft.com/images/' + productImage.filename + path.extname(productImage.originalname).toLowerCase() : null
+    let productImageUrl = productImage ? 'https://cdn.upesisoft.com/images/products/' + productImage.filename + path.extname(productImage.originalname).toLowerCase() : null
 
     // Update product Image path name
     if (path.extname(productImage.originalname).toLowerCase()) {
@@ -125,7 +125,7 @@ exports.new = function(req, res) {
         measurement: measurement,
         qty: qty,
         price: price,
-        salePrice: salePrice ? salePrice : null,
+        salePrice: null,
         measurementUnitId: measurementUnitId,
         taxClassId: taxClassId ? taxClassId : null,
         published: published,

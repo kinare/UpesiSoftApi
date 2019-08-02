@@ -1,5 +1,7 @@
 var customerModel = require('../../models/customerModels/customerModel')
 const moment = require('moment')
+const path = require('path')
+const fs = require('fs')
 
 exports.getAll = function(req, res) {
     // Checking all parameters are available
@@ -50,6 +52,7 @@ exports.new = function(req, res) {
     let customerPhoneNumber = req.body['customerPhoneNumber']
     let isBusiness = parseInt(req.body['isBusiness']) ? parseInt(req.body['isBusiness']) : 0
     let kraPin = req.body['kraPin']
+    let customerProfilePicture = req.file ? req.file : null
 
     let errorArray = []
     if(!businessId) {errorArray.push({name: 'businessId', text: 'Missing user token.'})}
@@ -75,7 +78,23 @@ exports.new = function(req, res) {
         })
     }
 
-    // Insert new product
+    // Insert product image
+    const targetPath = path.normalize('/var/www/cdn.upesisoft.com/html/images/customers/' + customerProfilePicture.filename + path.extname(customerProfilePicture.originalname).toLowerCase())
+    const tempPath = customerProfilePicture.path
+    let customerImageUrl = customerProfilePicture ? 'https://cdn.upesisoft.com/images/customers/' + customerProfilePicture.filename + path.extname(customerProfilePicture.originalname).toLowerCase() : null
+
+    // Update customer Image path name
+    if (path.extname(customerProfilePicture.originalname).toLowerCase()) {
+        fs.rename(tempPath, targetPath, err => {
+            console.log(err ? err : 'Successfully updated customer image path. Image uploaded successfully.')
+        });
+    } else {
+        fs.unlink(tempPath, err => {
+            console.log(err ? err : 'There was an error unlinking customer image path. Image not successfully updated.')
+        });
+    }
+
+    // Insert new customer
     let insertData = {
         businessId: businessId,
         customerFirstName: customerFirstName ? customerFirstName : null,
@@ -87,6 +106,7 @@ exports.new = function(req, res) {
         customerAddress: customerAddress ? customerAddress : null,
         customerPhoneNumber: customerPhoneNumber,
         kraPin: kraPin ? kraPin : null,
+        customerProfilePicture: customerImageUrl ? customerImageUrl : null,
         isBusiness: isBusiness ? isBusiness : typeof isBusiness === "number" ? isBusiness : 0,
         createdAt: moment().format('YYYY-MM-DD HH:mm:ss'),
         updatedAt: moment().format('YYYY-MM-DD HH:mm:ss')

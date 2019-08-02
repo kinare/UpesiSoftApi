@@ -3,6 +3,8 @@ const userController = require('./userController')
 const userIdentityModel = require('../../models/userModels/userIdentityModel')
 const bcrypt = require('bcryptjs')
 const moment = require('moment')
+const path = require('path')
+const fs = require('fs')
 
 // Create new user(under a business) - Tie them down to a user group(can be custom to that business)
 exports.createUser = function(req, res) {
@@ -14,6 +16,7 @@ exports.createUser = function(req, res) {
     let confirmPassword = req.body['confirmPassword']
     let userRoleId = req.body['userRoleId']
     let businessId = req.userDetails.businessId
+    let profilePicture = req.file ? req.file : null
 
     // Check if required parameters have been passed
     let errorArray = []
@@ -37,6 +40,22 @@ exports.createUser = function(req, res) {
         })
     }
 
+    // Insert product image
+    const targetPath = path.normalize('/var/www/cdn.upesisoft.com/html/images/users/' + profilePicture.filename + path.extname(profilePicture.originalname).toLowerCase())
+    const tempPath = profilePicture.path
+    let userImageUrl = profilePicture ? 'https://cdn.upesisoft.com/images/users/' + profilePicture.filename + path.extname(profilePicture.originalname).toLowerCase() : null
+
+    // Update user Image path name
+    if (path.extname(profilePicture.originalname).toLowerCase()) {
+        fs.rename(tempPath, targetPath, err => {
+            console.log(err ? err : 'Successfully updated user image path. Image uploaded successfully.')
+        });
+    } else {
+        fs.unlink(tempPath, err => {
+            console.log(err ? err : 'There was an error unlinking user image path. Image not successfully updated.')
+        });
+    }
+
     // Inserting user details
     let insertUserData = {
         firstName: firstName,
@@ -45,6 +64,7 @@ exports.createUser = function(req, res) {
         password: bcrypt.hashSync(password, 10),
         roleId: userRoleId,
         businessId: businessId,
+        profilePicture: userImageUrl ? userImageUrl : null,
         activationCode: Math.floor(100000 + Math.random() * 900000),
         createdAt: moment().format('YYYY-MM-DD HH:mm:ss'),
         updatedAt: moment().format('YYYY-MM-DD HH:mm:ss')
