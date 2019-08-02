@@ -11,7 +11,7 @@ var moment = require('moment')
 
 // Get user by email
 exports.getByEmail = function(email = null, callback) {
-    let sql = "SELECT users.*, userRoles.roleType FROM ?? LEFT JOIN ?? ON ?? = ?? WHERE ?? = ?";
+    let sql = "SELECT users.*, userRoles.roleType, userRoles.userPermissionsId FROM ?? LEFT JOIN ?? ON ?? = ?? WHERE ?? = ?";
     
     // let columns = ['users.*', 'userRoles.name as roleType'];
     let inserts = ['users', 'userRoles', 'users.roleId', 'userRoles.id', 'email', email];
@@ -51,7 +51,7 @@ exports.updateUserDetails = function(updateVariable = null, updateData = null, c
 
 // Check if user can login
 exports.login = function(email = null, password = null, callback) {
-    let sql = "SELECT users.*, userRoles.roleType FROM ?? LEFT JOIN ?? ON ?? = ?? WHERE ?? = ? AND ?? = ?";
+    let sql = "SELECT users.*, userRoles.roleType, userRoles.userPermissionsId FROM ?? LEFT JOIN ?? ON ?? = ?? WHERE ?? = ? AND ?? = ?";
 
     let inserts = ['users', 'userRoles', 'users.roleId', 'userRoles.id', 'email', email, 'users.state', 1];
     sql = mysql.format(sql, inserts);
@@ -106,6 +106,7 @@ exports.signup = function(insertData = null, callback) {
     });    
 }
 
+// Activate user
 exports.activate = function(email = null, activateData = null, callback) {
     // Get user data first
     let getSql = "SELECT * FROM ?? WHERE ?? = ?";
@@ -153,6 +154,7 @@ exports.activate = function(email = null, activateData = null, callback) {
     });
 }
 
+// Reset password
 exports.resetPassword = function(resetDetails, callback) {
     // Get user based on email
     exports.getByEmail(resetDetails.email, function(userDetails) {
@@ -201,4 +203,25 @@ exports.resetPassword = function(resetDetails, callback) {
             })
         }
     })
+}
+
+// Get user permissions
+exports.getUserPermissions = function(userPermissionsId, callback) {
+    let sql = "SELECT * FROM ?? WHERE ?? = ?";
+    
+    let inserts = ['userPermissions', 'id', userPermissionsId];
+    sql = mysql.format(sql, inserts);
+
+    pool.query(sql, function (error, results, fields) {
+        if (error) {
+            callback(false)
+        } else {
+            if(results && results.length > 0) {
+                callback(results)
+            } else {
+                // No user permissions exists
+                callback(false)
+            }
+        }
+    });
 }

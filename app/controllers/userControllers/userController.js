@@ -69,31 +69,34 @@ exports.login = function(req, res) {
         } else {
             // Get user token
             businessAccountsModel.getBusinessById(response.businessId, function(businessResponse) {
-                // Return data
-                let payload = {
-                    email: response.email,
-                    userId: response.id,
-                    firstName: response.firstName,
-                    lastName: response.lastName,
-                    profilePicture: response.profilePicture,
-                    roleId: response.roleId,
-                    roleType: response.roleType,
-                    businessId: response.businessId
-                }
-    
-                let options = {
-                    issuer: req.hostname,
-                    subject: response.email,
-                    audience: req.hostname
-                }
-    
-                res.send({
-                    status: 'success',
-                    data: {
-                        user: response,
-                        businessDetails: businessResponse[0] ? businessResponse[0] : null,
-                        token: jwt.sign(payload, key, options)
+                userIdentityModel.getUserPermissions(response.userPermissionsId, (userPermissionsResponse) => {
+                    // Return data
+                    let payload = {
+                        email: response.email,
+                        userId: response.id,
+                        firstName: response.firstName,
+                        lastName: response.lastName,
+                        profilePicture: response.profilePicture,
+                        roleId: response.roleId,
+                        roleType: response.roleType,
+                        businessId: response.businessId
                     }
+        
+                    let options = {
+                        issuer: req.hostname,
+                        subject: response.email,
+                        audience: req.hostname
+                    }
+        
+                    res.send({
+                        status: 'success',
+                        data: {
+                            user: response,
+                            userPermissions: userPermissionsResponse[0] ? userPermissionsResponse[0] : null,
+                            businessDetails: businessResponse[0] ? businessResponse[0] : null,
+                            token: jwt.sign(payload, key, options)
+                        }
+                    })
                 })
             })
         }

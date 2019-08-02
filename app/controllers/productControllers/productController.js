@@ -1,5 +1,7 @@
 const productModel = require('../../models/productModels/productModel')
 const moment = require('moment')
+const path = require('path')
+const fs = require('fs')
 
 exports.getAll = function(req, res) {
     // Checking all parameters are available
@@ -37,13 +39,14 @@ exports.getAll = function(req, res) {
     })
 }
 
+// Create a new product
 exports.new = function(req, res) {
     // Checking all parameters are available
     let businessId = req.userDetails.businessId
     let productName = req.body['productName']
     let productDescription = req.body['productDescription']
     let productShortDescription = req.body['productShortDescription']
-    let categoryId = req.body['categoryId']
+    let productCategoryId = req.body['productCategoryId']
     let availableFrom = req.body['availableFrom']
     let availableTo = req.body['availableTo']
     let sku = req.body['sku']
@@ -58,13 +61,14 @@ exports.new = function(req, res) {
     let customSaleUnit = req.body['customSaleUnit'] // Only available if sellAs === CUSTOM
     let measurement = req.body['measurement']
     let qty = parseInt(req.body['qty']) ? parseInt(req.body['qty']) : 0 // Default - 0
+    let productImage = req.file ? req.file : null
 
     let errorArray = []
     if(!businessId) {errorArray.push({name: 'businessId', text: 'Missing user token.'})}
     if(!productName) {errorArray.push({name: 'productName', text: 'Missing product name.'})}
     if(!productDescription) {errorArray.push({name: 'productDescription', text: 'Missing product description.'})}
     if(!productShortDescription) {errorArray.push({name: 'productShortDescription', text: 'Missing product short description.'})}
-    if(!categoryId) {errorArray.push({name: 'categoryId', text: 'Missing product category Id.'})}
+    if(!productCategoryId) {errorArray.push({name: 'productCategoryId', text: 'Missing product category Id.'})}
     if(!price && typeof price !== 'number') {errorArray.push({name: 'price', text: 'Missing product price.'})}
     if(!measurementUnitId) {errorArray.push({name: 'measurementUnitId', text: 'Missing measurement unit.'})}
     if(!published) {errorArray.push({name: 'published', text: 'Missing published field.'})}
@@ -88,13 +92,30 @@ exports.new = function(req, res) {
         })
     }
 
+    // Insert product image
+    const targetPath = path.normalize('/var/www/cdn.upesisoft.com/html/images/' + productImage.filename + path.extname(productImage.originalname).toLowerCase())
+    const tempPath = productImage.path
+    let productImageUrl = productImage ? 'https://cdn.upesisoft.com/images/' + productImage.filename + path.extname(productImage.originalname).toLowerCase() : null
+
+    // Update product Image path name
+    if (path.extname(productImage.originalname).toLowerCase()) {
+        fs.rename(tempPath, targetPath, err => {
+            console.log(err ? err : 'Successfully updated product image path. Image uploaded successfully.')
+        });
+    } else {
+        fs.unlink(tempPath, err => {
+            console.log(err ? err : 'There was an error unlinking product image path. Image not successfully updated.')
+        });
+    }
+
     // Insert new product
     let insertData = {
         businessId: businessId,
         productName: productName,
         productDescription: productDescription,
         productShortDescription: productShortDescription,
-        productCategoryId: categoryId ? categoryId : null,
+        productCategoryId: productCategoryId ? productCategoryId : null,
+        productImage: productImageUrl ? productImageUrl : null,
         availableFrom: availableFrom ? availableFrom : null,
         availableTo: availableTo ? availableTo : null,
         sku: sku ? sku : null,
