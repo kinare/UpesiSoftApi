@@ -2,19 +2,31 @@ let mysql = require('mysql');
 const bcrypt = require('bcryptjs');
 let pool  = mysql.createPool({
     connectionLimit : 10,
-    host            : 'localhost',
-    user            : 'root',
-    password        : 'Karibu098!@#',
-    database        : 'focusErp'
-});
+    host            : process.env.DB_HOST,
+    user            : process.env.DB_USERNAME,
+    password        : process.env.DB_PASSWORD,
+    database        : process.env.DB_DATABASE
+})
 var moment = require('moment')
 
 // Get user by email
-exports.getByEmail = function(email = null, callback) {
+exports.getUser = function(userId = null, email = null, callback) {
     let sql = "SELECT users.*, userRoles.roleType, userRoles.userPermissionsId FROM ?? LEFT JOIN ?? ON ?? = ?? WHERE ?? = ?";
     
     // let columns = ['users.*', 'userRoles.name as roleType'];
-    let inserts = ['users', 'userRoles', 'users.roleId', 'userRoles.id', 'email', email];
+    let inserts = ['users', 'userRoles', 'users.roleId', 'userRoles.id', 'users.state', 1];
+
+    // Check if get by email or by Id
+    if(userId) {
+        sql += " AND users.id = ?"
+        inserts.push(userId)
+    }
+
+    if(email) {
+        sql += " AND users.email = ?"
+        inserts.push(email)
+    }
+
     sql = mysql.format(sql, inserts);
 
     pool.query(sql, function (error, results, fields) {
@@ -157,7 +169,7 @@ exports.activate = function(email = null, activateData = null, callback) {
 // Reset password
 exports.resetPassword = function(resetDetails, callback) {
     // Get user based on email
-    exports.getByEmail(resetDetails.email, function(userDetails) {
+    exports.getUser(null, resetDetails.email, function(userDetails) {
         if(userDetails[0]) {
             // Check if code matches
             if(userDetails[0].resetPasswordCode === resetDetails.resetPasswordCode) {

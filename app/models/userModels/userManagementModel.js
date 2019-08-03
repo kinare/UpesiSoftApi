@@ -1,10 +1,10 @@
 let mysql = require('mysql')
 let pool  = mysql.createPool({
     connectionLimit : 10,
-    host            : 'localhost',
-    user            : 'root',
-    password        : 'Karibu098!@#',
-    database        : 'focusErp'
+    host            : process.env.DB_HOST,
+    user            : process.env.DB_USERNAME,
+    password        : process.env.DB_PASSWORD,
+    database        : process.env.DB_DATABASE
 })
 
 // Storing permissions
@@ -99,4 +99,27 @@ exports.getAllUserRoles = function(businessId = null, callback) {
             }
         }
     });
+}
+
+// Delete user
+exports.deleteUser = function(userId, updateData, callback) {
+    // If codes match, update entry
+    let sql = "UPDATE ?? SET ? WHERE ?? = ?";
+
+    let inserts = ['users', updateData, updateVariable['name'], updateVariable['value']];
+    sql = mysql.format(sql, inserts);
+
+    pool.query(sql, function (error, results, fields) {
+        if (error) {
+            // throw error
+            callback(false)
+        } else {
+            callback(results)
+        }
+    });
+}
+
+// Delete user roles
+exports.deleteUserRole = function(userRole, callback) {
+
 }

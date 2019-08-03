@@ -79,9 +79,9 @@ exports.new = function(req, res) {
     }
 
     // Insert product image
-    const targetPath = path.normalize('/var/www/cdn.upesisoft.com/html/images/customers/' + customerProfilePicture.filename + path.extname(customerProfilePicture.originalname).toLowerCase())
+    const targetPath = path.normalize(process.env.IMAGES_UPLOAD_ROOT + 'images/customers/' + customerProfilePicture.filename + path.extname(customerProfilePicture.originalname).toLowerCase())
     const tempPath = customerProfilePicture.path
-    let customerImageUrl = customerProfilePicture ? 'https://cdn.upesisoft.com/images/customers/' + customerProfilePicture.filename + path.extname(customerProfilePicture.originalname).toLowerCase() : null
+    let customerImageUrl = customerProfilePicture ? process.env.CDN_URL + 'images/customers/' + customerProfilePicture.filename + path.extname(customerProfilePicture.originalname).toLowerCase() : null
 
     // Update customer Image path name
     if (path.extname(customerProfilePicture.originalname).toLowerCase()) {

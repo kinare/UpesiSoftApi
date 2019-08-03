@@ -12,7 +12,7 @@ exports.verifyUserToken = function(req, res, next) {
         jwt.verify(token, key, function (err, payload) {
             if(payload && payload.email) {
                 // Get user based on the payload
-                userIdentityModel.getByEmail(payload.email, function(response) {
+                userIdentityModel.getUser(null, payload.email, function(response) {
                     // Check if the user exists
                     if(response && response.length > 0) {
                         req.userDetails = response[0]
@@ -282,7 +282,7 @@ exports.resetInitiate = function(req, res) {
     }
     
     // Check if valid user & activated
-    userIdentityModel.getByEmail(email, function(response) { 
+    userIdentityModel.getUser(null, email, function(response) { 
         if(response) {
             // Send out renewal email
             let resetData = {

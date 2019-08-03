@@ -41,9 +41,9 @@ exports.createUser = function(req, res) {
     }
 
     // Insert product image
-    const targetPath = path.normalize('/var/www/cdn.upesisoft.com/html/images/users/' + profilePicture.filename + path.extname(profilePicture.originalname).toLowerCase())
+    const targetPath = path.normalize(process.env.IMAGES_UPLOAD_ROOT + 'images/users/' + profilePicture.filename + path.extname(profilePicture.originalname).toLowerCase())
     const tempPath = profilePicture.path
-    let userImageUrl = profilePicture ? 'https://cdn.upesisoft.com/images/users/' + profilePicture.filename + path.extname(profilePicture.originalname).toLowerCase() : null
+    let userImageUrl = profilePicture ? process.env.CDN_URL + 'images/users/' + profilePicture.filename + path.extname(profilePicture.originalname).toLowerCase() : null
 
     // Update user Image path name
     if (path.extname(profilePicture.originalname).toLowerCase()) {
@@ -135,6 +135,99 @@ exports.getAllUsers = function(req, res) {
             })
         }
     })
+}
+
+// Delete user
+exports.deleteUser = function(req, res) {
+    // Get params
+    let businessId = req.userDetails.businessId ? req.userDetails.businessId : null
+    let userId = parseInt(req.body['userId']) ? parseInt(req.body['userId']) : null
+    let deleteInitiateUserId = req.userDetails.id ? req.userDetails.id : null
+
+    // Check if required parameters have been passed
+    let errorArray = []
+    if(!businessId) {errorArray.push({name: 'businessId', text: 'Missing user token.'})}
+    if(!userId) {errorArray.push({name: 'userId', text: 'Missing user Id.'})}
+
+    if(errorArray.length > 0 ) {
+        // If variables are missing
+        return res.status(400).send({
+            status: 'error',
+            message: 'Missing required parameters in request.',
+            data: {
+                list: errorArray
+            }
+        })
+    }
+
+    // Check if the 2 users match
+    if(userId === deleteInitiateUserId) {
+        // If variables are missing
+        return res.status(400).send({
+            status: 'error',
+            message: 'Cannot perform action. User being deleted is the same as the user performing the action.'
+        })
+    }
+
+    // Check if user has delete permissions
+    // Get user details
+    userIdentityModel.getUser(userId, null, function(userResponse) {
+        if(userResponse) {
+            // Get user permissions
+            userIdentityModel.getUserPermissions(userResponse[0].userPermissionsId, function(userPermissionsResponse) {
+                if(userPermissionsResponse) {
+                    // Check if user can delete
+                    if(userPermissionsResponse[0].deleteUsers === 1) {
+                        // Delete user
+                        let updateData = {
+                            state: 0,
+                            updatedAt: moment().format('YYYY-MM-DD HH:mm:ss')
+                        }
+                        
+                        let updateVariable = {
+                            name: 'id',
+                            value: userId
+                        }
+
+                        userIdentityModel.updateUserDetails(updateVariable, updateData, function(deleteUserResponse) {
+                            if(deleteUserResponse) {
+                                res.send({
+                                    status: 'success',
+                                    data: {
+                                        deleteData: deleteUserResponse
+                                    }
+                                })
+                            } else {
+                                res.status(400).send({
+                                    status: 'error',
+                                    message: 'There was an error deleting user. Please try again.'
+                                })
+                            }
+                        })
+                    } else {
+                        res.status(400).send({
+                            status: 'error',
+                            message: 'Could not perform action. User is not authorized.'
+                        })
+                    }
+
+                } else {
+                    res.status(400).send({
+                        status: 'error',
+                        message: 'Could not perform action. There was an error retrieving user permissions.'
+                    })
+                }
+            })
+
+        } else {
+            res.status(400).send({
+                status: 'error',
+                message: 'Please login with a valid user. User trying to perform action not found.'
+            })
+        }
+    })
+
+    // TODO: Log user delete
 }
 
 // Create new user role - set up permissions and user role details
@@ -258,4 +351,13 @@ exports.getAllUserRoles = function(req, res) {
             })
         }
     })
+}
+
+// Delete user roles
+exports.deleteUserRole = function(req, res) {
+    // Get params
+
+    // Check if user has delete permissions
+
+    // TODO: Log user role delete
 }

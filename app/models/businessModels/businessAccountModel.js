@@ -1,11 +1,11 @@
 let mysql = require('mysql');
 let pool  = mysql.createPool({
     connectionLimit : 10,
-    host            : 'localhost',
-    user            : 'root',
-    password        : 'Karibu098!@#',
-    database        : 'focusErp'
-});
+    host            : process.env.DB_HOST,
+    user            : process.env.DB_USERNAME,
+    password        : process.env.DB_PASSWORD,
+    database        : process.env.DB_DATABASE
+})
 
 // Register business
 exports.register = function(insertData = null, callback) {
