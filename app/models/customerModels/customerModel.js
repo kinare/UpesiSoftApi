@@ -54,3 +54,21 @@ exports.addNew = function(insertData = null, callback) {
         }
     });    
 }
+
+// Delete customer
+exports.deleteCustomer = function(updateVariables, updateData, callback) {
+    // If codes match, update entry
+    let sql = "UPDATE ?? SET ? WHERE ?? = ? AND ?? = ?";
+
+    let inserts = ['customers', updateData, 'id', updateVariables['id'], 'businessId', updateVariables['businessId']];
+    sql = mysql.format(sql, inserts);
+
+    pool.query(sql, function (error, results, fields) {
+        if (error) {
+            // throw error
+            callback(false)
+        } else {
+            callback(results)
+        }
+    });
+}

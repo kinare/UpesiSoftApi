@@ -153,7 +153,7 @@ exports.deleteUser = function(req, res) {
         // If variables are missing
         return res.status(400).send({
             status: 'error',
-            message: 'Missing required parameters in request.',
+            message: 'Missing required parameters in the request.',
             data: {
                 list: errorArray
             }
@@ -171,7 +171,7 @@ exports.deleteUser = function(req, res) {
 
     // Check if user has delete permissions
     // Get user details
-    userIdentityModel.getUser(userId, null, function(userResponse) {
+    userIdentityModel.getUser(deleteInitiateUserId, null, function(userResponse) {
         if(userResponse) {
             // Get user permissions
             userIdentityModel.getUserPermissions(userResponse[0].userPermissionsId, function(userPermissionsResponse) {
@@ -184,23 +184,21 @@ exports.deleteUser = function(req, res) {
                             updatedAt: moment().format('YYYY-MM-DD HH:mm:ss')
                         }
                         
-                        let updateVariable = {
-                            name: 'id',
-                            value: userId
+                        let updateVariables = {
+                            id: userId,
+                            businessId: businessId
                         }
 
-                        userIdentityModel.updateUserDetails(updateVariable, updateData, function(deleteUserResponse) {
-                            if(deleteUserResponse) {
+                        userManagementModel.deleteUser(updateVariables, updateData, function(deleteUserResponse) {
+                            if(deleteUserResponse.affectedRows) {
                                 res.send({
                                     status: 'success',
-                                    data: {
-                                        deleteData: deleteUserResponse
-                                    }
+                                    data: null
                                 })
                             } else {
                                 res.status(400).send({
                                     status: 'error',
-                                    message: 'There was an error deleting user. Please try again.'
+                                    message: 'There was an error deleting user. Please make sure the user exists and try again.'
                                 })
                             }
                         })
@@ -356,8 +354,81 @@ exports.getAllUserRoles = function(req, res) {
 // Delete user roles
 exports.deleteUserRole = function(req, res) {
     // Get params
+    let businessId = req.userDetails.businessId ? req.userDetails.businessId : null
+    let userRoleId = parseInt(req.body['userRoleId']) ? parseInt(req.body['userRoleId']) : null
+    let deleteInitiateUserId = req.userDetails.id ? req.userDetails.id : null
+
+    // Check if required parameters have been passed
+    let errorArray = []
+    if(!businessId) {errorArray.push({name: 'businessId', text: 'Missing user token.'})}
+    if(!userRoleId) {errorArray.push({name: 'userRoleId', text: 'Missing User Role Id.'})}
+
+    if(errorArray.length > 0) {
+        // If variables are missing
+        return res.status(400).send({
+            status: 'error',
+            message: 'Missing required parameters in the request.',
+            data: {
+                list: errorArray
+            }
+        })
+    }
 
     // Check if user has delete permissions
+    // Get delete user details
+    userIdentityModel.getUser(deleteInitiateUserId, null, function(userResponse) {
+        if(userResponse) {
+            // Get user permissions
+            userIdentityModel.getUserPermissions(userResponse[0].userPermissionsId, function(userPermissionsResponse) {
+                if(userPermissionsResponse) {
+                    // Check if user can delete
+                    if(userPermissionsResponse[0].deleteUserRoles === 1) {
+                        // Delete user role
+                        let updateData = {
+                            state: 0,
+                            updatedAt: moment().format('YYYY-MM-DD HH:mm:ss')
+                        }
+                        
+                        let updateVariables = {
+                            id: userRoleId,
+                            businessId: businessId
+                        }
+
+                        userManagementModel.deleteUserRole(updateVariables, updateData, function(deleteUserRoleResponse) {
+                            if(deleteUserRoleResponse.affectedRows) {
+                                res.send({
+                                    status: 'success',
+                                    data: null
+                                })
+                            } else {
+                                res.status(400).send({
+                                    status: 'error',
+                                    message: 'There was an error deleting user role. Please make sure a user role with that ID exists and try again.'
+                                })
+                            }
+                        })
+                    } else {
+                        res.status(400).send({
+                            status: 'error',
+                            message: 'Could not perform action. User is not authorized.'
+                        })
+                    }
+
+                } else {
+                    res.status(400).send({
+                        status: 'error',
+                        message: 'Could not perform action. There was an error retrieving user permissions.'
+                    })
+                }
+            })
+
+        } else {
+            res.status(400).send({
+                status: 'error',
+                message: 'Please login with a valid user. User trying to perform action not found.'
+            })
+        }
+    })
 
     // TODO: Log user role delete
 }

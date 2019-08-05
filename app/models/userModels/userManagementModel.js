@@ -102,11 +102,11 @@ exports.getAllUserRoles = function(businessId = null, callback) {
 }
 
 // Delete user
-exports.deleteUser = function(userId, updateData, callback) {
+exports.deleteUser = function(updateVariables, updateData, callback) {
     // If codes match, update entry
-    let sql = "UPDATE ?? SET ? WHERE ?? = ?";
+    let sql = "UPDATE ?? SET ? WHERE ?? = ? AND ?? = ?";
 
-    let inserts = ['users', updateData, updateVariable['name'], updateVariable['value']];
+    let inserts = ['users', updateData, 'id', updateVariables['id'], 'businessId', updateVariables['businessId']];
     sql = mysql.format(sql, inserts);
 
     pool.query(sql, function (error, results, fields) {
@@ -119,7 +119,20 @@ exports.deleteUser = function(userId, updateData, callback) {
     });
 }
 
-// Delete user roles
-exports.deleteUserRole = function(userRole, callback) {
+// Run delete user
+exports.deleteUserRole = function(updateVariables = null, updateData = null, callback) {
+    // If codes match, update entry
+    let sql = "UPDATE ?? SET ? WHERE ?? = ? AND ?? = ?";
 
+    let inserts = ['userRoles', updateData, 'id', updateVariables['id'], 'businessId', updateVariables['businessId']];
+    sql = mysql.format(sql, inserts);
+
+    pool.query(sql, function (error, results, fields) {
+        if (error) {
+            // throw error
+            callback(false)
+        } else {
+            callback(results)
+        }
+    });
 }

@@ -9,5 +9,6 @@ const upload = multer({
 
 router.get('/v1/customers/get/all', userController.verifyUserToken, customerController.getAll)
 router.post('/v1/customers/new', [userController.verifyUserToken, upload.single("customerProfilePicture")], customerController.new)
+router.delete('/v1/customer', userController.verifyUserToken, customerController.deleteCustomer)
 
 module.exports = router;
