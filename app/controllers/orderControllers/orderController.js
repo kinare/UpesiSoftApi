@@ -107,7 +107,7 @@ exports.new = function(req, res) {
                     insertOrderItemDetails = [response.insertId,item.productId,null,item.sellAs,item.qty,null,null,null,parseFloat(item.price),1,moment().format('YYYY-MM-DD HH:mm:ss'),moment().format('YYYY-MM-DD HH:mm:ss')]
 
                     // Get product details
-                    productModel.getProduct(item.productId, function(productResponse) {
+                    productModel.getProduct(null, item.productId, function(productResponse) {
                         // If there is a product
                         if(!productResponse.error && productResponse) {
                             // Update product details i.e. update measurements & qty etc

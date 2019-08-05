@@ -522,12 +522,14 @@ exports.deleteSubProduct = function(req, res) {
     // Get params
     let businessId = req.userDetails.businessId ? req.userDetails.businessId : null
     let subProductId = parseInt(req.body['subProductId']) ? parseInt(req.body['subProductId']) : null
+    let productId = parseInt(req.body['productId']) ? parseInt(req.body['productId']) : null
     let deleteInitiateUserId = req.userDetails.id ? req.userDetails.id : null
 
     // Check if required parameters have been passed
     let errorArray = []
     if(!businessId) {errorArray.push({name: 'businessId', text: 'Missing user token.'})}
     if(!subProductId) {errorArray.push({name: 'subProductId', text: 'Missing sub-product Id.'})}
+    if(!productId) {errorArray.push({name: 'productId', text: 'Missing primary product Id.'})}
 
     if(errorArray.length > 0 ) {
         // If variables are missing
@@ -549,27 +551,37 @@ exports.deleteSubProduct = function(req, res) {
                 if(userPermissionsResponse) {
                     // Check if user can delete
                     if(userPermissionsResponse[0].deleteProducts === 1) {
-                        // Delete sub-product
-                        let updateData = {
-                            state: 0,
-                            updatedAt: moment().format('YYYY-MM-DD HH:mm:ss')
-                        }
-                        
-                        let updateVariables = {
-                            id: subProductId,
-                            businessId: businessId
-                        }
-
-                        productModel.deleteSubProduct(updateVariables, updateData, function(deleteSubProductResponse) {
-                            if(deleteSubProductResponse.affectedRows) {
-                                res.send({
-                                    status: 'success',
-                                    data: null
-                                })
+                        // Get parent product
+                        productModel.getProduct(businessId, productId, function(getProductResponse) {
+                            if(!getProductResponse.error) {
+                                // Delete sub-product
+                                let updateData = {
+                                    state: 0,
+                                    updatedAt: moment().format('YYYY-MM-DD HH:mm:ss')
+                                }
+                                
+                                let updateVariables = {
+                                    id: subProductId,
+                                    businessId: businessId
+                                }
+        
+                                productModel.deleteSubProduct(updateVariables, updateData, function(deleteSubProductResponse) {
+                                    if(deleteSubProductResponse.affectedRows) {
+                                        res.send({
+                                            status: 'success',
+                                            data: null
+                                        })
+                                    } else {
+                                        res.status(400).send({
+                                            status: 'error',
+                                            message: 'There was an error deleting the sub-product. Please make sure that the sub-product exists and try again.'
+                                        })
+                                    }
+                                })                                
                             } else {
                                 res.status(400).send({
                                     status: 'error',
-                                    message: 'There was an error deleting the sub-product. Please make sure that the sub-product exists and try again.'
+                                    message: 'There was an error retrieving the primary product. Sub-product not deleted.'
                                 })
                             }
                         })

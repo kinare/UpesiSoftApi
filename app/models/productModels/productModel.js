@@ -175,10 +175,16 @@ exports.getSubProducts = function(productId = null, callback) {
     });
 }
 
-exports.getProduct = function(productId = null, callback) {
+exports.getProduct = function(businessId = null, productId = null, callback) {
     let sql = "SELECT * FROM ?? WHERE ?? = ? AND ?? = ?";
     
     let inserts = ['products', 'state', 1, 'id', productId];
+
+    if(businessId) {
+        sql += ' AND businessId = ?'
+        inserts.push(businessId)
+    }
+
     sql = mysql.format(sql, inserts);
 
     pool.query(sql, function (error, results, fields) {
@@ -290,9 +296,9 @@ exports.deleteProduct = function(updateVariables, updateData, callback) {
 // Delete sub-product
 exports.deleteSubProduct = function(updateVariables, updateData, callback) {
     // If codes match, update entry
-    let sql = "UPDATE ?? SET ? WHERE ?? = ? AND ?? = ?";
+    let sql = "UPDATE ?? SET ? WHERE ?? = ?";
 
-    let inserts = ['subProductList', updateData, 'id', updateVariables['id'], 'businessId', updateVariables['businessId']];
+    let inserts = ['subProductList', updateData, 'id', updateVariables['id']];
     sql = mysql.format(sql, inserts);
 
     pool.query(sql, function (error, results, fields) {
