@@ -136,3 +136,31 @@ exports.deleteUserRole = function(updateVariables = null, updateData = null, cal
         }
     });
 }
+
+// Get business types
+exports.getBusinessTypes = function(callback) {
+    let sql = "SELECT * FROM ?? WHERE ?? = ?";
+    
+    let inserts = ['businessTypes', 'state', 1];
+    sql = mysql.format(sql, inserts);
+
+    pool.query(sql, function (error, results, fields) {
+        if (error) {
+            callback({
+                error: true,
+                text: 'There was an error retrieving business types.',
+                sqlMessage: error.sqlMessage 
+            })
+        } else {
+            if(results && results.length > 0) {
+                callback(results)
+            } else {
+                // No business types exists
+                callback({
+                    error: true,
+                    text: 'There were no business types found.'
+                })
+            }
+        }
+    });
+}

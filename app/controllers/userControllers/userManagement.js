@@ -432,3 +432,23 @@ exports.deleteUserRole = function(req, res) {
 
     // TODO: Log user role delete
 }
+
+// Get business types
+exports.getBusinessTypes = function(req, res) {
+    userManagementModel.getBusinessTypes(function(businessTypesResponse) {
+        if(!businessTypesResponse.error) {
+            res.send({
+                status: 'success',
+                data: {
+                    businessTypes: businessTypesResponse
+                }
+            })
+        } else {
+            res.status(400).send({
+                status: 'error',
+                message: businessTypesResponse.text ? businessTypesResponse.text : 'There was an error retrieving business types. Please try again.',
+                sqlMessage: businessTypesResponse.sqlMessage ? businessTypesResponse.sqlMessage : null
+            })
+        }
+    })
+}
