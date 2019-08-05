@@ -1,4 +1,5 @@
 const productModel = require('../../models/productModels/productModel')
+const userIdentityModel = require('../../models/userModels/userIdentityModel')
 const moment = require('moment')
 const path = require('path')
 const fs = require('fs')
@@ -186,13 +187,13 @@ exports.new = function(req, res) {
 exports.deleteProduct = function(req, res) {
     // Get params
     let businessId = req.userDetails.businessId ? req.userDetails.businessId : null
-    let customerId = parseInt(req.body['customerId']) ? parseInt(req.body['customerId']) : null
+    let productId = parseInt(req.body['productId']) ? parseInt(req.body['productId']) : null
     let deleteInitiateUserId = req.userDetails.id ? req.userDetails.id : null
 
     // Check if required parameters have been passed
     let errorArray = []
     if(!businessId) {errorArray.push({name: 'businessId', text: 'Missing user token.'})}
-    if(!customerId) {errorArray.push({name: 'customerId', text: 'Missing customer Id.'})}
+    if(!productId) {errorArray.push({name: 'productId', text: 'Missing product Id.'})}
 
     if(errorArray.length > 0 ) {
         // If variables are missing
@@ -213,20 +214,20 @@ exports.deleteProduct = function(req, res) {
             userIdentityModel.getUserPermissions(userResponse[0].userPermissionsId, function(userPermissionsResponse) {
                 if(userPermissionsResponse) {
                     // Check if user can delete
-                    if(userPermissionsResponse[0].deleteCustomers === 1) {
-                        // Delete customer
+                    if(userPermissionsResponse[0].deleteProducts === 1) {
+                        // Delete product
                         let updateData = {
                             state: 0,
                             updatedAt: moment().format('YYYY-MM-DD HH:mm:ss')
                         }
                         
                         let updateVariables = {
-                            id: customerId,
+                            id: productId,
                             businessId: businessId
                         }
 
-                        customerModel.deleteCustomer(updateVariables, updateData, function(deleteCustomerResponse) {
-                            if(deleteCustomerResponse.affectedRows) {
+                        productModel.deleteProduct(updateVariables, updateData, function(deleteProductResponse) {
+                            if(deleteProductResponse.affectedRows) {
                                 res.send({
                                     status: 'success',
                                     data: null
@@ -234,7 +235,7 @@ exports.deleteProduct = function(req, res) {
                             } else {
                                 res.status(400).send({
                                     status: 'error',
-                                    message: 'There was an error deleting the customer. Please make sure that the customer exists and try again.'
+                                    message: 'There was an error deleting the product. Please make sure that the product exists and try again.'
                                 })
                             }
                         })
@@ -359,6 +360,86 @@ exports.createCategory = function(req, res) {
     })
 }
 
+// Delete product category
+exports.deleteCategory = function(req, res) {
+    // Get params
+    let businessId = req.userDetails.businessId ? req.userDetails.businessId : null
+    let productCategoryId = parseInt(req.body['productCategoryId']) ? parseInt(req.body['productCategoryId']) : null
+    let deleteInitiateUserId = req.userDetails.id ? req.userDetails.id : null
+
+    // Check if required parameters have been passed
+    let errorArray = []
+    if(!businessId) {errorArray.push({name: 'businessId', text: 'Missing user token.'})}
+    if(!productCategoryId) {errorArray.push({name: 'productCategoryId', text: 'Missing product category Id.'})}
+
+    if(errorArray.length > 0 ) {
+        // If variables are missing
+        return res.status(400).send({
+            status: 'error',
+            message: 'Missing required parameters in the request.',
+            data: {
+                list: errorArray
+            }
+        })
+    }
+
+    // Check if user has delete permissions
+    // Get delete user details
+    userIdentityModel.getUser(deleteInitiateUserId, null, function(userResponse) {
+        if(userResponse) {
+            // Get user permissions
+            userIdentityModel.getUserPermissions(userResponse[0].userPermissionsId, function(userPermissionsResponse) {
+                if(userPermissionsResponse) {
+                    // Check if user can delete
+                    if(userPermissionsResponse[0].deleteProducts === 1) {
+                        // Delete product category
+                        let updateData = {
+                            state: 0,
+                            updatedAt: moment().format('YYYY-MM-DD HH:mm:ss')
+                        }
+                        
+                        let updateVariables = {
+                            id: productCategoryId,
+                            businessId: businessId
+                        }
+
+                        productModel.deleteProductCategory(updateVariables, updateData, function(deleteProductCategoryResponse) {
+                            if(deleteProductCategoryResponse.affectedRows) {
+                                res.send({
+                                    status: 'success',
+                                    data: null
+                                })
+                            } else {
+                                res.status(400).send({
+                                    status: 'error',
+                                    message: 'There was an error deleting the product. Please make sure that the product exists and try again.'
+                                })
+                            }
+                        })
+                    } else {
+                        res.status(400).send({
+                            status: 'error',
+                            message: 'Could not perform action. User is not authorized.'
+                        })
+                    }
+
+                } else {
+                    res.status(400).send({
+                        status: 'error',
+                        message: 'Could not perform action. There was an error retrieving user permissions.'
+                    })
+                }
+            })
+
+        } else {
+            res.status(400).send({
+                status: 'error',
+                message: 'Please login with a valid user. User trying to perform action not found.'
+            })
+        }
+    })
+}
+
 exports.getAllCategories = function(req, res) {
     // Get params
     let businessId = req.userDetails.businessId
@@ -431,6 +512,86 @@ exports.getSubProducts = function(req, res) {
             res.send({
                 status: 'success',
                 data: response
+            })
+        }
+    })
+}
+
+// Delete sub-product
+exports.deleteSubProduct = function(req, res) {
+    // Get params
+    let businessId = req.userDetails.businessId ? req.userDetails.businessId : null
+    let subProductId = parseInt(req.body['subProductId']) ? parseInt(req.body['subProductId']) : null
+    let deleteInitiateUserId = req.userDetails.id ? req.userDetails.id : null
+
+    // Check if required parameters have been passed
+    let errorArray = []
+    if(!businessId) {errorArray.push({name: 'businessId', text: 'Missing user token.'})}
+    if(!subProductId) {errorArray.push({name: 'subProductId', text: 'Missing sub-product Id.'})}
+
+    if(errorArray.length > 0 ) {
+        // If variables are missing
+        return res.status(400).send({
+            status: 'error',
+            message: 'Missing required parameters in the request.',
+            data: {
+                list: errorArray
+            }
+        })
+    }
+
+    // Check if user has delete permissions
+    // Get delete user details
+    userIdentityModel.getUser(deleteInitiateUserId, null, function(userResponse) {
+        if(userResponse) {
+            // Get user permissions
+            userIdentityModel.getUserPermissions(userResponse[0].userPermissionsId, function(userPermissionsResponse) {
+                if(userPermissionsResponse) {
+                    // Check if user can delete
+                    if(userPermissionsResponse[0].deleteProducts === 1) {
+                        // Delete sub-product
+                        let updateData = {
+                            state: 0,
+                            updatedAt: moment().format('YYYY-MM-DD HH:mm:ss')
+                        }
+                        
+                        let updateVariables = {
+                            id: subProductId,
+                            businessId: businessId
+                        }
+
+                        productModel.deleteSubProduct(updateVariables, updateData, function(deleteSubProductResponse) {
+                            if(deleteSubProductResponse.affectedRows) {
+                                res.send({
+                                    status: 'success',
+                                    data: null
+                                })
+                            } else {
+                                res.status(400).send({
+                                    status: 'error',
+                                    message: 'There was an error deleting the sub-product. Please make sure that the sub-product exists and try again.'
+                                })
+                            }
+                        })
+                    } else {
+                        res.status(400).send({
+                            status: 'error',
+                            message: 'Could not perform action. User is not authorized.'
+                        })
+                    }
+
+                } else {
+                    res.status(400).send({
+                        status: 'error',
+                        message: 'Could not perform action. There was an error retrieving user permissions.'
+                    })
+                }
+            })
+
+        } else {
+            res.status(400).send({
+                status: 'error',
+                message: 'Please login with a valid user. User trying to perform action not found.'
             })
         }
     })

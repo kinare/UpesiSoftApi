@@ -13,11 +13,13 @@ router.post('/v1/products/new', [userController.verifyUserToken, upload.single("
 router.delete('/v1/product', userController.verifyUserToken, productController.deleteProduct)
 
 router.get('/v1/product/subProducts/all', userController.verifyUserToken, productController.getSubProducts)
+router.delete('/v1/subProduct', userController.verifyUserToken, productController.deleteSubProduct)
 
 router.get('/v1/products/measurementUnits', userController.verifyUserToken, productController.getMeasurementUnits)
 
 router.post('/v1/products/createCategory', userController.verifyUserToken, productController.createCategory)
 router.get('/v1/products/categories', userController.verifyUserToken, productController.getAllCategories)
+router.delete('/v1/products/category', userController.verifyUserToken, productController.deleteCategory)
 
 router.post('/v1/products/image/upload', [userController.verifyUserToken, upload.single("productImage")], imageController.uploadProductImage)
 

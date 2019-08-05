@@ -268,3 +268,57 @@ exports.updateSubProduct = function(subProductId = null, updateDetails = null, c
         }
     });    
 }
+
+// Delete product
+exports.deleteProduct = function(updateVariables, updateData, callback) {
+    // If codes match, update entry
+    let sql = "UPDATE ?? SET ? WHERE ?? = ? AND ?? = ?";
+
+    let inserts = ['products', updateData, 'id', updateVariables['id'], 'businessId', updateVariables['businessId']];
+    sql = mysql.format(sql, inserts);
+
+    pool.query(sql, function (error, results, fields) {
+        if (error) {
+            // throw error
+            callback(false)
+        } else {
+            callback(results)
+        }
+    });
+}
+
+// Delete sub-product
+exports.deleteSubProduct = function(updateVariables, updateData, callback) {
+    // If codes match, update entry
+    let sql = "UPDATE ?? SET ? WHERE ?? = ? AND ?? = ?";
+
+    let inserts = ['subProductList', updateData, 'id', updateVariables['id'], 'businessId', updateVariables['businessId']];
+    sql = mysql.format(sql, inserts);
+
+    pool.query(sql, function (error, results, fields) {
+        if (error) {
+            // throw error
+            callback(false)
+        } else {
+            callback(results)
+        }
+    });
+}
+
+// Delete product category 
+exports.deleteProductCategory = function(updateVariables, updateData, callback) {
+    // If codes match, update entry
+    let sql = "UPDATE ?? SET ? WHERE ?? = ? AND ?? = ?";
+
+    let inserts = ['productCategories', updateData, 'id', updateVariables['id'], 'businessId', updateVariables['businessId']];
+    sql = mysql.format(sql, inserts);
+
+    pool.query(sql, function (error, results, fields) {
+        if (error) {
+            // throw error
+            callback(false)
+        } else {
+            callback(results)
+        }
+    });
+}
