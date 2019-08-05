@@ -10,6 +10,7 @@ const upload = multer({
 
 router.get('/v1/products/get/all', userController.verifyUserToken, productController.getAll)
 router.post('/v1/products/new', [userController.verifyUserToken, upload.single("productImage")], productController.new)
+router.delete('/v1/product', userController.verifyUserToken, productController.deleteProduct)
 
 router.get('/v1/product/subProducts/all', userController.verifyUserToken, productController.getSubProducts)
 

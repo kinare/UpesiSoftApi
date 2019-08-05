@@ -182,6 +182,86 @@ exports.new = function(req, res) {
     })
 }
 
+// Delete a product
+exports.deleteProduct = function(req, res) {
+    // Get params
+    let businessId = req.userDetails.businessId ? req.userDetails.businessId : null
+    let customerId = parseInt(req.body['customerId']) ? parseInt(req.body['customerId']) : null
+    let deleteInitiateUserId = req.userDetails.id ? req.userDetails.id : null
+
+    // Check if required parameters have been passed
+    let errorArray = []
+    if(!businessId) {errorArray.push({name: 'businessId', text: 'Missing user token.'})}
+    if(!customerId) {errorArray.push({name: 'customerId', text: 'Missing customer Id.'})}
+
+    if(errorArray.length > 0 ) {
+        // If variables are missing
+        return res.status(400).send({
+            status: 'error',
+            message: 'Missing required parameters in the request.',
+            data: {
+                list: errorArray
+            }
+        })
+    }
+
+    // Check if user has delete permissions
+    // Get delete user details
+    userIdentityModel.getUser(deleteInitiateUserId, null, function(userResponse) {
+        if(userResponse) {
+            // Get user permissions
+            userIdentityModel.getUserPermissions(userResponse[0].userPermissionsId, function(userPermissionsResponse) {
+                if(userPermissionsResponse) {
+                    // Check if user can delete
+                    if(userPermissionsResponse[0].deleteCustomers === 1) {
+                        // Delete customer
+                        let updateData = {
+                            state: 0,
+                            updatedAt: moment().format('YYYY-MM-DD HH:mm:ss')
+                        }
+                        
+                        let updateVariables = {
+                            id: customerId,
+                            businessId: businessId
+                        }
+
+                        customerModel.deleteCustomer(updateVariables, updateData, function(deleteCustomerResponse) {
+                            if(deleteCustomerResponse.affectedRows) {
+                                res.send({
+                                    status: 'success',
+                                    data: null
+                                })
+                            } else {
+                                res.status(400).send({
+                                    status: 'error',
+                                    message: 'There was an error deleting the customer. Please make sure that the customer exists and try again.'
+                                })
+                            }
+                        })
+                    } else {
+                        res.status(400).send({
+                            status: 'error',
+                            message: 'Could not perform action. User is not authorized.'
+                        })
+                    }
+
+                } else {
+                    res.status(400).send({
+                        status: 'error',
+                        message: 'Could not perform action. There was an error retrieving user permissions.'
+                    })
+                }
+            })
+
+        } else {
+            res.status(400).send({
+                status: 'error',
+                message: 'Please login with a valid user. User trying to perform action not found.'
+            })
+        }
+    })
+}
+
 exports.getMeasurementUnits = function(req, res) {
     // Checking all parameters are available
     let businessId = req.userDetails.businessId
