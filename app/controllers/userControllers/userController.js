@@ -320,7 +320,8 @@ exports.resetInitiate = function(req, res) {
                 } else {
                     res.status(400).send({
                         status: 'error',
-                        message: 'Reset password instructions successfully sent. Please check your email.'
+                        message: 'Reset password instructions successfully sent. Please check your email.',
+                        sqlMessage: response.sqlMessage ? response.sqlMessage : null
                     })
                 }
             })

@@ -482,8 +482,6 @@ exports.getSubProducts = function(req, res) {
     let businessId = req.userDetails.businessId
     let productId = req.query.productId
 
-    debugger
-
     let errorArray = []
     if(!businessId) {errorArray.push({name: 'businessId', text: 'Missing user token.'})}
     if(!productId) {errorArray.push({name: 'productId', text: 'Missing parent product Id.'})}

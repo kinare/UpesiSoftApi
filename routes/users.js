@@ -1,7 +1,8 @@
 var express = require('express')
 var router = express.Router()
 var userController = require('../app/controllers/userControllers/userController')
-const userManagement = require('../app/controllers/userControllers/userManagement')
+var userManagement = require('../app/controllers/userControllers/userManagement')
+var userRolesController = require('../app/controllers/userControllers/userRolesController')
 var multer = require('multer')
 const upload = multer({
     dest: process.env.IMAGES_UPLOAD_ROOT + "images/users"
@@ -20,10 +21,17 @@ router.post('/v1/b/users/create', [userController.verifyUserToken, upload.single
 router.get('/v1/b/users/get', userController.verifyUserToken, userManagement.getAllUsers)
 router.delete('/v1/b/user', userController.verifyUserToken, userManagement.deleteUser)
 
+// User updates
+// 1.a. Password
+
+// 1.b. Image
+
+// 1.c. Details
+
 // 2. User Roles
-router.post('/v1/b/roles/create', userController.verifyUserToken, userManagement.createRole)
-router.get('/v1/b/roles/get', userController.verifyUserToken, userManagement.getAllUserRoles)
-router.delete('/v1/b/role', userController.verifyUserToken, userManagement.deleteUserRole)
+router.post('/v1/b/roles/create', userController.verifyUserToken, userRolesController.createRole)
+router.get('/v1/b/roles/get', userController.verifyUserToken, userRolesController.getAllUserRoles)
+router.delete('/v1/b/role', userController.verifyUserToken, userRolesController.deleteUserRole)
 
 // 3. Businesses
 router.get('/v1/b/businessTypes', userManagement.getBusinessTypes)

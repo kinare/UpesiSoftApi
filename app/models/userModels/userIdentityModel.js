@@ -54,7 +54,7 @@ exports.updateUserDetails = function(updateVariable = null, updateData = null, c
     pool.query(sql, function (error, results, fields) {
         if (error) {
             // throw error
-            callback(false)
+            callback({error: 'true', text: error.sqlMessage})
         } else {
             callback(results)
         }
