@@ -20,6 +20,7 @@ exports.createUser = function(req, res) {
     let userId = parseInt(req.body['userId']) ? parseInt(req.body['userId']) : null
     let phoneCountryCode = req.body['phoneCountryCode'] ? req.body['phoneCountryCode'] : null
     let userPhoneNumber = req.body['userPhoneNumber'] ? req.body['userPhoneNumber'] : null
+    let initiateUserId = req.userDetails.id ? req.userDetails.id : null
 
     // Check if required parameters have been passed
     let errorArray = []
@@ -63,96 +64,136 @@ exports.createUser = function(req, res) {
             });
         }
     }
+    // Get delete user details
+    userIdentityModel.getUser(initiateUserId, null, function(userResponse) {
+        if(userResponse) {
+            // Get user permissions
+            userIdentityModel.getUserPermissions(userResponse[0].userPermissionsId, function(userPermissionsResponse) {
+                if(userPermissionsResponse) {
+                    // Check if insert or update
+                    if(!userId) {
+                        // Check if user can create
+                        if(userPermissionsResponse[0].createUsers === 1) {
+                            // Proceed with insert
+                            // Inserting user details
+                            let insertUserData = {
+                                firstName: firstName,
+                                lastName: lastName,
+                                email: email,
+                                phoneCountryCode: phoneCountryCode,
+                                userPhoneNumber: userPhoneNumber,
+                                password: bcrypt.hashSync(password, 10),
+                                roleId: roleId,
+                                businessId: businessId,
+                                profilePicture: userImageUrl ? userImageUrl : null,
+                                activationCode: Math.floor(100000 + Math.random() * 900000),
+                                createdAt: moment().format('YYYY-MM-DD HH:mm:ss'),
+                                updatedAt: moment().format('YYYY-MM-DD HH:mm:ss')
+                            }
 
-    // Check if insert or update
-    if(!userId) {
-        // Proceed with insert
-        // Inserting user details
-        let insertUserData = {
-            firstName: firstName,
-            lastName: lastName,
-            email: email,
-            phoneCountryCode: phoneCountryCode,
-            userPhoneNumber: userPhoneNumber,
-            password: bcrypt.hashSync(password, 10),
-            roleId: roleId,
-            businessId: businessId,
-            profilePicture: userImageUrl ? userImageUrl : null,
-            activationCode: Math.floor(100000 + Math.random() * 900000),
-            createdAt: moment().format('YYYY-MM-DD HH:mm:ss'),
-            updatedAt: moment().format('YYYY-MM-DD HH:mm:ss')
-        }
+                            userIdentityModel.signup(insertUserData, function(userResponse) {
+                                // Check if user details were inserted
+                                if(userResponse.insertId) {
+                                    userController.sendActivationEmail(insertUserData, function(activationEmailResponse) {
+                                        // Parse activation email response
+                                        if(activationEmailResponse.error) {
+                                            // Return error message
+                                            res.status(400).send({
+                                                status: 'error',
+                                                message: 'User successfully registered although the activation email was not send. Contact an administrator for assistance.'
+                                            })
+                                        } else {
+                                            // Return success
+                                            res.send({
+                                                status: 'success',
+                                                data: null
+                                            })
+                                        }
+                                    })
 
-        userIdentityModel.signup(insertUserData, function(userResponse) {
-            // Check if user details were inserted
-            if(userResponse.insertId) {
-                userController.sendActivationEmail(insertUserData, function(activationEmailResponse) {
-                    // Parse activation email response
-                    if(activationEmailResponse.error) {
-                        // Return error message
-                        res.status(400).send({
-                            status: 'error',
-                            message: 'User successfully registered although the activation email was not send. Contact an administrator for assistance.'
-                        })
+                                } else {
+                                    res.status(400).send({
+                                        status: 'error',
+                                        message: userResponse.text ? userResponse.text : 'There was an error inserting user details. Please try again. If the issue persists, contact an administrator.'
+                                    })
+                                }
+                            })
+
+                        } else {
+                            res.status(400).send({
+                                status: 'error',
+                                message: 'Could not perform action. User is not authorized.'
+                            })
+                        }
+
                     } else {
-                        // Return success
-                        res.send({
-                            status: 'success',
-                            data: null
-                        })
+                        // Check if user can update/edit
+                        if(userPermissionsResponse[0].editUsers === 1) {
+                            // Do update
+                            let updateObj = {}
+
+                            // Check params and push them to array
+                            if(firstName)
+                                updateObj.firstName = firstName
+                            if(lastName)
+                                updateObj.lastName = lastName
+                            if(email)
+                                updateObj.email = email
+                            if(password)
+                                updateObj.password = bcrypt.hashSync(password, 10)
+                            if(userPhoneNumber)
+                                updateObj.userPhoneNumber = userPhoneNumber
+                            if(phoneCountryCode)
+                                updateObj.phoneCountryCode = phoneCountryCode
+                            if(roleId)
+                                updateObj.roleId = roleId
+                            if(userImageUrl)
+                                updateObj.profilePicture = userImageUrl
+
+                            let updateVariable = {
+                                name: 'id',
+                                value: userId
+                            }
+
+                            // Run update
+                            userIdentityModel.updateUserDetails(updateVariable, updateObj, function(userUpdateResponse) {
+                                if(userUpdateResponse.affectedRows > 0) {
+                                    res.send({
+                                        status: 'success',
+                                        data: null
+                                    })
+                                } else {
+                                    res.status(400).send({
+                                        status: 'error',
+                                        message: 'There was are error updating user details. Please try again or contact the support team if the issue persists.',
+                                        sqlMessage: userUpdateResponse.sqlMessage ? userUpdateResponse.sqlMessage : null
+                                    })
+                                }
+                            })
+                        } else {
+                            res.status(400).send({
+                                status: 'error',
+                                message: 'Could not perform action. User is not authorized.'
+                            })
+                        }     
                     }
-                })
 
-            } else {
-                res.status(400).send({
-                    status: 'error',
-                    message: userResponse.text ? userResponse.text : 'There was an error inserting user details. Please try again. If the issue persists, contact an administrator.'
-                })
-            }
-        })
-    } else {
-        // Do update
-        let updateObj = {}
+                } else {
+                    res.status(400).send({
+                        status: 'error',
+                        message: 'Could not perform action. There was an error retrieving user permissions.'
+                    })
+                }
+            })
 
-        // Check params and push them to array
-        if(firstName)
-            updateObj.firstName = firstName
-        if(lastName)
-            updateObj.lastName = lastName
-        if(email)
-            updateObj.email = email
-        if(password)
-            updateObj.password = bcrypt.hashSync(password, 10)
-        if(userPhoneNumber)
-            updateObj.userPhoneNumber = userPhoneNumber
-        if(phoneCountryCode)
-            updateObj.phoneCountryCode = phoneCountryCode
-        if(roleId)
-            updateObj.roleId = roleId
-        if(userImageUrl)
-            updateObj.profilePicture = userImageUrl
-
-        let updateVariable = {
-            name: 'id',
-            value: userId
+        } else {
+            res.status(400).send({
+                status: 'error',
+                message: 'Please login with a valid user. User trying to perform action not found.'
+            })
         }
+    })
 
-        // Run update
-        userIdentityModel.updateUserDetails(updateVariable, updateObj, function(userUpdateResponse) {
-            if(userUpdateResponse.affectedRows > 0) {
-                res.send({
-                    status: 'success',
-                    data: null
-                })
-            } else {
-                res.status(400).send({
-                    status: 'error',
-                    message: 'There was are error updating user details. Please try again or contact the support team if the issue persists.',
-                    sqlMessage: userUpdateResponse.sqlMessage ? userUpdateResponse.sqlMessage : null
-                })
-            }
-        })        
-    }
 }
 
 // Get all users
