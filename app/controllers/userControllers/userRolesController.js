@@ -8,15 +8,28 @@ exports.createRole = function(req, res) {
     let roleName = req.body['roleName']
     let businessId = req.userDetails.businessId
     let roleDescription = req.body['roleDescription']
+    let initiateUserId = req.userDetails.id ? req.userDetails.id : null
+    let roleId = parseInt(req.body['roleId']) ? parseInt(req.body['roleId']) : null
 
     // Getting permissions
     let createUsers = req.body['createUsers']
     let editUsers = req.body['editUsers']
     let viewUsers = req.body['viewUsers']
+    let deleteUsers = req.body['deleteUsers']
+    let createUserRoles = req.body['createUserRoles']
+    let viewUserRoles = req.body['viewUserRoles']
+    let deleteUserRoles = req.body['deleteUserRoles']
+    let editUserRoles = req.body['editUserRoles']
     let createProducts = req.body['createProducts']
     let editProducts = req.body['editProducts']
     let viewProducts = req.body['viewProducts']
+    let deleteProducts  = req.body['deleteProducts']
+    let createCustomers = req.body['createCustomers']
+    let editCustomers = req.body['editCustomers']
+    let viewCustomers = req.body['viewCustomers']
+    let deleteCustomers  = req.body['deleteCustomers']
     let makeSales = req.body['makeSales']
+    let viewSales = req.body['viewSales']
 
     // Check if required parameters have been passed
     let errorArray = []
@@ -34,55 +47,215 @@ exports.createRole = function(req, res) {
         })
     }
 
-    // Storing permissions first
-    let userPermissions = {
-        createUsers: createUsers ? createUsers : 0,
-        editUsers: editUsers ? editUsers : 0,
-        viewUsers: viewUsers ? viewUsers : 0,
-        createProducts: createProducts ? createProducts : 0,
-        editProducts: editProducts ? editProducts : 0,
-        viewProducts: viewProducts ? viewProducts : 0,
-        makeSales: makeSales ? makeSales : 0,
-    }
+    debugger
 
-    userManagementModel.savePermissions(userPermissions, function(permissionsResponse) {
-        if(permissionsResponse.insertId) {
-            // Insert User Category Details
-            let userRoleDetails = {
-                roleName: roleName,
-                roleType: roleName.toLowerCase().replace(' ', '_'),
-                roleDescription: roleDescription ? roleDescription : null,
-                businessId: businessId,
-                userPermissionsId: permissionsResponse.insertId,
-                createdAt: moment().format('YYYY-MM-DD HH:mm:ss'),
-                updatedAt: moment().format('YYYY-MM-DD HH:mm:ss')
-            }
+    // Get user details
+    userIdentityModel.getUser(initiateUserId, null, function(userResponse) {
+        if(userResponse) {
+            debugger
+            // Get user permissions
+            userIdentityModel.getUserPermissions(userResponse[0].userPermissionsId, function(userPermissionsResponse) {
+                debugger
+                if(userPermissionsResponse) {
+                    // Check if insert or update
+                    if(!roleId) {
+                        // Check if user can create
+                        if(userPermissionsResponse[0].createUserRoles === 1) {
+                            // Storing permissions first
+                            let userPermissions = {
+                                createUsers: createUsers ? createUsers : 0,
+                                editUsers: editUsers ? editUsers : 0,
+                                viewUsers: viewUsers ? viewUsers : 0,
+                                deleteUsers: deleteUsers ? deleteUsers : 0,
+                                createProducts: createProducts ? createProducts : 0,
+                                editProducts: editProducts ? editProducts : 0,
+                                viewProducts: viewProducts ? viewProducts : 0,
+                                deleteProducts: deleteProducts ? deleteProducts : 0,
+                                createUserRoles: createUserRoles ? createUserRoles : 0,
+                                viewUserRoles: viewUserRoles ? viewUserRoles : 0,
+                                deleteUserRoles: deleteUserRoles ? deleteUserRoles : 0,
+                                editUserRoles: editUserRoles ? editUserRoles : 0,
+                                createCustomers: createCustomers ? createCustomers : 0,
+                                editCustomers: editCustomers ? editCustomers : 0,
+                                viewCustomers: viewCustomers ? viewCustomers : 0,
+                                deleteCustomers: deleteCustomers ? deleteCustomers : 0,
+                                makeSales: makeSales ? makeSales : 0,
+                                viewSales: viewSales ? viewSales : 0,
+                                createdAt: moment().format('YYYY-MM-DD HH:mm:ss'),
+                                updatedAt: moment().format('YYYY-MM-DD HH:mm:ss')
+                            }
 
-            // Insert Category Details
-            userManagementModel.createUserRole(userRoleDetails, function(rolesResponse) {
-                if(rolesResponse.insertId) {
-                    // Return success
-                    res.send({
-                        status: 'success',
-                        data: null
-                    })
+                            userManagementModel.savePermissions(userPermissions, function(permissionsResponse) {
+                                if(permissionsResponse.insertId) {
+                                    // Insert User Category Details
+                                    let userRoleDetails = {
+                                        roleName: roleName,
+                                        roleType: roleName.toLowerCase().replace(' ', '_'),
+                                        roleDescription: roleDescription ? roleDescription : null,
+                                        businessId: businessId,
+                                        userPermissionsId: permissionsResponse.insertId,
+                                        createdAt: moment().format('YYYY-MM-DD HH:mm:ss'),
+                                        updatedAt: moment().format('YYYY-MM-DD HH:mm:ss')
+                                    }
 
+                                    // Insert Category Details
+                                    userManagementModel.createUserRole(userRoleDetails, function(rolesResponse) {
+                                        if(rolesResponse.insertId) {
+                                            // Return success
+                                            res.send({
+                                                status: 'success',
+                                                data: null
+                                            })
+
+                                        } else {
+                                            // Error inserting user permissions
+                                            res.status(400).send({
+                                                status: 'error',
+                                                message: 'There was an error inserting new user role. Please try again. If the issue persists, contact an administrator.',
+                                                sqlMessage: rolesResponse.text
+                                            })
+                                        }
+                                    })
+
+                                } else {
+                                    // Error inserting user permissions
+                                    res.status(400).send({
+                                        status: 'error',
+                                        message: 'There was an error inserting user permissions. Please try again. If the issue persists, contact an administrator.',
+                                        sqlMessage: permissionsResponse.text
+                                    })
+                                }
+                            })
+                        } else {
+                            res.status(400).send({
+                                status: 'error',
+                                message: 'Could not perform action. User is not authorized.'
+                            })
+                        }
+                    } else {
+                        // Check if user can create
+                        if(userPermissionsResponse[0].editUserRoles === 1) {
+                            debugger
+                            // Get role based on ID
+                            userManagementModel.getUserRole(roleId, businessId, function(response) {
+                                debugger
+                                if(!response.error && response.length > 0) {
+                                    // Update permissions; Check which permissions were updated
+                                    let userPermissions = {}
+
+                                    if(createUsers)
+                                        userPermissions.createUsers = createUsers
+                                    if(editUsers)
+                                        userPermissions.editUsers = editUsers
+                                    if(viewUsers)
+                                        userPermissions.viewUsers = viewUsers
+                                    if(deleteUsers)
+                                        userPermissions.deleteUsers = deleteUsers
+                                    if(createProducts)
+                                        userPermissions.createProducts = createProducts
+                                    if(editProducts)
+                                        userPermissions.editProducts = editProducts
+                                    if(viewProducts)
+                                        userPermissions.viewProducts = viewProducts
+                                    if(deleteProducts)
+                                        userPermissions.deleteProducts = deleteProducts
+                                    if(createUserRoles)
+                                        userPermissions.createUserRoles = createUserRoles
+                                    if(viewUserRoles)
+                                        userPermissions.viewUserRoles = viewUserRoles
+                                    if(deleteUserRoles)
+                                        userPermissions.deleteUserRoles = deleteUserRoles
+                                    if(editUserRoles)
+                                        userPermissions.editUserRoles = editUserRoles
+                                    if(createCustomers)
+                                        userPermissions.createCustomers = createCustomers
+                                    if(editCustomers)
+                                        userPermissions.editCustomers = editCustomers
+                                    if(viewCustomers)
+                                        userPermissions.viewCustomers = viewCustomers
+                                    if(deleteCustomers)
+                                        userPermissions.deleteCustomers = deleteCustomers
+                                    if(makeSales)
+                                        userPermissions.makeSales = makeSales
+                                    if(viewSales)
+                                        userPermissions.viewSales = viewSales
+                                    
+                                    // Update date
+                                    userPermissions.updatedAt = moment().format('YYYY-MM-DD HH:mm:ss')
+
+                                    debugger
+
+                                    // Update user permissions
+                                    userManagementModel.updatePermissions(response[0].userPermissionsId, userPermissions, function(updatePermissionsResponse) {
+                                        debugger
+                                        if(updatePermissionsResponse.affectedRows > 0) {
+                                            // Insert User Category Details
+                                            let userRoleDetails = {}
+
+                                            if(roleName)
+                                                userRoleDetails.roleName = roleName
+                                                userRoleDetails.roleType = roleName.toLowerCase().replace(' ', '_')
+                                                
+                                            if(roleDescription)
+                                                userRoleDetails.roleDescription = roleDescription
+
+                                            userRoleDetails.updatedAt = moment().format('YYYY-MM-DD HH:mm:ss')
+                                            
+                                            // Insert Category Details
+                                            userManagementModel.updateUserRole(response[0].userPermissionsId, businessId, userRoleDetails, function(updateRoleResponse) {
+                                                debugger
+                                                if(updateRoleResponse.affectedRows > 0) {
+                                                    // Return success
+                                                    res.send({
+                                                        status: 'success',
+                                                        data: null
+                                                    })
+                                                } else {
+                                                    // Error updating user role
+                                                    res.status(400).send({
+                                                        status: 'error',
+                                                        message: 'There was an error updating user role. Please try again. If the issue persists, contact an administrator.',
+                                                        sqlMessage: updateRoleResponse.sqlMessage ? updateRoleResponse.sqlMessage : null
+                                                    })
+                                                }
+                                            })
+
+                                        } else {
+                                            // Error updating user permissions
+                                            res.status(400).send({
+                                                status: 'error',
+                                                message: 'There was an error updating user permissions. Please try again. If the issue persists, contact an administrator.',
+                                                sqlMessage: permissionsResponse.text
+                                            })
+                                        }
+                                    })
+                                } else {
+                                    res.status(400).send({
+                                        status: 'error',
+                                        message: 'There was an error retrieving the user role for update. Please make sure the role exists.',
+                                        sqlMessage: response.sqlMessage ? response.sqlMessage : null
+                                    })
+                                }
+                            })
+                        } else {
+                            res.status(400).send({
+                                status: 'error',
+                                message: 'Could not perform action. User is not authorized.'
+                            })
+                        }
+                    }
                 } else {
-                    // Error inserting user permissions
                     res.status(400).send({
                         status: 'error',
-                        message: 'There was an error inserting new user role. Please try again. If the issue persists, contact an administrator.',
-                        sqlMessage: rolesResponse.text
+                        message: 'Could not perform action. There was an error retrieving user permissions.'
                     })
                 }
             })
 
         } else {
-            // Error inserting user permissions
             res.status(400).send({
                 status: 'error',
-                message: 'There was an error inserting user permissions. Please try again. If the issue persists, contact an administrator.',
-                sqlMessage: permissionsResponse.text
+                message: 'Please login with a valid user. User trying to perform action not found.'
             })
         }
     })

@@ -64,6 +64,7 @@ exports.createUser = function(req, res) {
             });
         }
     }
+    
     // Get delete user details
     userIdentityModel.getUser(initiateUserId, null, function(userResponse) {
         if(userResponse) {
@@ -149,6 +150,9 @@ exports.createUser = function(req, res) {
                                 updateObj.roleId = roleId
                             if(userImageUrl)
                                 updateObj.profilePicture = userImageUrl
+
+                            // Update data
+                            updateObj.updatedAt = moment().format('YYYY-MM-DD HH:mm:ss')
 
                             let updateVariable = {
                                 name: 'id',

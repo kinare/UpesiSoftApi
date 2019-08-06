@@ -21,13 +21,6 @@ router.post('/v1/b/users/create', [userController.verifyUserToken, upload.single
 router.get('/v1/b/users/get', userController.verifyUserToken, userManagement.getAllUsers)
 router.delete('/v1/b/user', userController.verifyUserToken, userManagement.deleteUser)
 
-// User updates
-// 1.a. Password
-
-// 1.b. Image
-
-// 1.c. Details
-
 // 2. User Roles
 router.post('/v1/b/roles/create', userController.verifyUserToken, userRolesController.createRole)
 router.get('/v1/b/roles/get', userController.verifyUserToken, userRolesController.getAllUserRoles)

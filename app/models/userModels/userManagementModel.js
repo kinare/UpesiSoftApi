@@ -26,6 +26,24 @@ exports.savePermissions = function (userPermissions = null, callback) {
     });
 }
 
+// Update Permissions
+exports.updatePermissions = function(permissionId = null, updateData = null, callback) {
+    // If codes match, update entry
+    let sql = "UPDATE ?? SET ? WHERE ?? = ?";
+
+    let inserts = ['userPermissions', updateData, 'id', permissionId];
+    sql = mysql.format(sql, inserts);
+
+    pool.query(sql, function (error, results, fields) {
+        if (error) {
+            // throw error
+            callback({error: 'true', text: error.sqlMessage ? error.sqlMessage : 'There was an error updating the permission details.', sqlMessage: error.sqlMessage ? error.sqlMessage : null})
+        } else {
+            callback(results)
+        }
+    });
+}
+
 // Create new user role
 exports.createUserRole = function (userRoleDetails = null, callback) {
     let sql = "INSERT INTO ?? SET ?";
@@ -39,6 +57,23 @@ exports.createUserRole = function (userRoleDetails = null, callback) {
                 error: true,
                 text: error.sqlMessage
             })
+        } else {
+            callback(results)
+        }
+    });
+}
+
+// Update user role
+exports.updateUserRole = function(userRoleId = null, businessId = null, updateData = null, callback) {
+    let sql = "UPDATE ?? SET ? WHERE ?? = ? AND ?? = ?";
+
+    let inserts = ['userRoles', updateData, 'id', userRoleId, 'businessId', businessId];
+    sql = mysql.format(sql, inserts);
+
+    pool.query(sql, function (error, results, fields) {
+        if (error) {
+            // throw error
+            callback({error: 'true', text: error.sqlMessage ? error.sqlMessage : 'There was an error updating role details.', sqlMessage: error.sqlMessage ? error.sqlMessage : null})
         } else {
             callback(results)
         }
@@ -73,11 +108,12 @@ exports.getAllUsers = function(businessId = null, callback) {
     });
 }
 
-// Get all users
+// Get all user roles + global users
 exports.getAllUserRoles = function(businessId = null, callback) {
     let sql = "SELECT userRoles.id, userRoles.roleName, userRoles.roleType, userRoles.roleDescription, userRoles.userPermissionsId, userRoles.createdAt, userRoles.updatedAt, userPermissions.* FROM ?? LEFT JOIN ?? ON ?? = ?? WHERE ?? = ? OR ?? IS NULL AND ?? = ?";
     
-    let inserts = ['userRoles', 'userPermissions', 'userPermissions.id', 'userRoles.userPermissionsId', 'businessId', businessId, 'businessId', 'state', 1];
+    let inserts = ['userRoles', 'userPermissions', 'userPermissions.id', 'userRoles.userPermissionsId', 'userRoles.businessId', businessId, 'userRoles.businessId', 'userRoles.state', 1];
+
     sql = mysql.format(sql, inserts);
 
     pool.query(sql, function (error, results, fields) {
@@ -95,6 +131,35 @@ exports.getAllUserRoles = function(businessId = null, callback) {
                 callback({
                     error: true,
                     text: 'There were no user roles found.'
+                })
+            }
+        }
+    });
+}
+
+// Get user role
+exports.getUserRole = function(roleId = null, businessId = null, callback) {
+    let sql = "SELECT * FROM ?? WHERE ?? = ? AND ?? = ? AND ?? = ?";
+    
+    let inserts = ['userRoles', 'userRoles.businessId', businessId, 'id', roleId, 'userRoles.state', 1];
+
+    sql = mysql.format(sql, inserts);
+
+    pool.query(sql, function (error, results, fields) {
+        if (error) {
+            callback({
+                error: true,
+                text: 'There was an error retrieving the user role.',
+                sqlMessage: error.sqlMessage 
+            })
+        } else {
+            if(results && results.length > 0) {
+                callback(results)
+            } else {
+                // No users exists
+                callback({
+                    error: true,
+                    text: 'No user role found.'
                 })
             }
         }
