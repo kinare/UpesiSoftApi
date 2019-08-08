@@ -52,7 +52,8 @@ exports.new = function(req, res) {
     let availableTo = req.body['availableTo']
     let sku = req.body['sku']
     let price = parseFloat(req.body['price']) ? parseFloat(req.body['price']) : 0.00
-    let salePrice = parseFloat(req.body['salePrice']) ? parseFloat(req.body['salePrice']) : null
+    let salePrice = parseFloat(req.body['price']) ? parseFloat(req.body['price']) : 0.00
+    let unitPrice = parseFloat(req.body['unitPrice']) ? parseFloat(req.body['unitPrice']) : 0.00
     let measurementUnitId = req.body['measurementUnitId']
     let taxClassId = req.body['taxClassId']
     let published = req.body['published']
@@ -76,10 +77,11 @@ exports.new = function(req, res) {
     if(!sellAs) {errorArray.push({name: 'sellAs', text: 'Missing sellAs field.'})}
     // If sellAs === CUSTOM, check for customSaleUnit & measurement
     if(sellAs === 'CUSTOM') {
-        if(!customSaleUnit) {errorArray.push({name: 'customSaleUnit', text: 'Missing customSaleUnit field.'})}
+        if(!customSaleUnit) {errorArray.push({name: 'customSaleUnit', text: 'Missing Custom Sale Unit field.'})}
         if(!measurement) {errorArray.push({name: 'measurement', text: 'Missing measurement field.'})}
         // Check if number
-        if(!qty && typeof qty == "number") {errorArray.push({name: 'qty', text: 'Missing quantity field or wrong datatype. Please enter a number.'})}    
+        if(!qty && typeof qty == "number") {errorArray.push({name: 'qty', text: 'Missing quantity field or wrong datatype. Please enter a number.'})}
+        if(!unitPrice && typeof unitPrice !== 'number') {errorArray.push({name: 'unitPrice', text: 'Missing product unit price.'})}
     }
 
     if(errorArray.length > 0 ) {
@@ -126,7 +128,8 @@ exports.new = function(req, res) {
         measurement: measurement,
         qty: qty,
         price: price,
-        salePrice: null,
+        salePrice: salePrice,
+        unitPrice: unitPrice,
         measurementUnitId: measurementUnitId,
         taxClassId: taxClassId ? taxClassId : null,
         published: published,

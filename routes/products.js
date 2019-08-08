@@ -23,4 +23,7 @@ router.delete('/v1/products/category', userController.verifyUserToken, productCo
 
 router.post('/v1/products/image/upload', [userController.verifyUserToken, upload.single("productImage")], imageController.uploadProductImage)
 
+// Import products
+router.post('v1/products/import', productImportController.import)
+
 module.exports = router;
