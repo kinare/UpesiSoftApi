@@ -3,6 +3,7 @@ var router = express.Router();
 const userController = require('../app/controllers/userControllers/userController')
 const productController = require('../app/controllers/productControllers/productController')
 const imageController = require('../app/controllers/imageControllers/imageController')
+const productImportController = require('../app/controllers/productControllers/productImportController')
 var multer = require('multer')
 const upload = multer({
     dest: process.env.IMAGES_UPLOAD_ROOT + "images/products"
