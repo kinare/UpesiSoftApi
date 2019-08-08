@@ -95,20 +95,22 @@ exports.new = function(req, res) {
         })
     }
 
-    // Insert product image
-    const targetPath = path.normalize(process.env.IMAGES_UPLOAD_ROOT + 'images/products/' + productImage.filename + path.extname(productImage.originalname).toLowerCase())
-    const tempPath = productImage.path
-    let productImageUrl = productImage ? process.env.CDN_URL + 'images/products/' + productImage.filename + path.extname(productImage.originalname).toLowerCase() : null
+    if(productImage) {
+        // Insert product image
+        const targetPath = path.normalize(process.env.IMAGES_UPLOAD_ROOT + 'images/products/' + productImage.filename + path.extname(productImage.originalname).toLowerCase())
+        const tempPath = productImage.path
+        var productImageUrl = productImage ? process.env.CDN_URL + 'images/products/' + productImage.filename + path.extname(productImage.originalname).toLowerCase() : null
 
-    // Update product Image path name
-    if (path.extname(productImage.originalname).toLowerCase()) {
-        fs.rename(tempPath, targetPath, err => {
-            console.log(err ? err : 'Successfully updated product image path. Image uploaded successfully.')
-        });
-    } else {
-        fs.unlink(tempPath, err => {
-            console.log(err ? err : 'There was an error unlinking product image path. Image not successfully updated.')
-        });
+        // Update product Image path name
+        if (path.extname(productImage.originalname).toLowerCase()) {
+            fs.rename(tempPath, targetPath, err => {
+                console.log(err ? err : 'Successfully updated product image path. Image uploaded successfully.')
+            });
+        } else {
+            fs.unlink(tempPath, err => {
+                console.log(err ? err : 'There was an error unlinking product image path. Image not successfully updated.')
+            });
+        }
     }
 
     // Insert new product
