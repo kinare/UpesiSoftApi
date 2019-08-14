@@ -54,6 +54,8 @@ exports.new = function(req, res) {
     let isBusiness = parseInt(req.body['isBusiness']) ? parseInt(req.body['isBusiness']) : 0
     let kraPin = req.body['kraPin']
     let customerProfilePicture = req.file ? req.file : null
+    let initiateUserId = req.userDetails.id ? req.userDetails.id : null
+    let customerId = req.body['customerId'] ? req.body['customerId'] : null
 
     let errorArray = []
     if(!businessId) {errorArray.push({name: 'businessId', text: 'Missing user token.'})}
@@ -79,56 +81,152 @@ exports.new = function(req, res) {
         })
     }
 
-    // Insert product image
-    const targetPath = path.normalize(process.env.IMAGES_UPLOAD_ROOT + 'images/customers/' + customerProfilePicture.filename + path.extname(customerProfilePicture.originalname).toLowerCase())
-    const tempPath = customerProfilePicture.path
-    let customerImageUrl = customerProfilePicture ? process.env.CDN_URL + 'images/customers/' + customerProfilePicture.filename + path.extname(customerProfilePicture.originalname).toLowerCase() : null
+    if(customerProfilePicture) {
+        // Insert customer image
+        const targetPath = path.normalize(process.env.IMAGES_UPLOAD_ROOT + 'images/customers/' + customerProfilePicture.filename + path.extname(customerProfilePicture.originalname).toLowerCase())
+        const tempPath = customerProfilePicture.path
+        var customerImageUrl = customerProfilePicture ? process.env.CDN_URL + 'images/customers/' + customerProfilePicture.filename + path.extname(customerProfilePicture.originalname).toLowerCase() : null
 
-    // Update customer Image path name
-    if (path.extname(customerProfilePicture.originalname).toLowerCase()) {
-        fs.rename(tempPath, targetPath, err => {
-            console.log(err ? err : 'Successfully updated customer image path. Image uploaded successfully.')
-        });
-    } else {
-        fs.unlink(tempPath, err => {
-            console.log(err ? err : 'There was an error unlinking customer image path. Image not successfully updated.')
-        });
+        // Update customer Image path name
+        if (path.extname(customerProfilePicture.originalname).toLowerCase()) {
+            fs.rename(tempPath, targetPath, err => {
+                console.log(err ? err : 'Successfully updated customer image path. Image uploaded successfully.')
+            });
+        } else {
+            fs.unlink(tempPath, err => {
+                console.log(err ? err : 'There was an error unlinking customer image path. Image not successfully updated.')
+            });
+        }
     }
+    
+    // Get delete user details
+    userIdentityModel.getUser(initiateUserId, null, function(userResponse) {
+        if(userResponse) {
+            // Get user permissions
+            userIdentityModel.getUserPermissions(userResponse[0].userPermissionsId, function(userPermissionsResponse) {
+                if(userPermissionsResponse) {
+                    // Check if insert or update
+                    if(customerId) {
+                        // Do update
+                        // Check if user has the permissions to do so
+                        if(userPermissionsResponse[0].editCustomers === 1) {
+                            // TODO: Update
+                            let updateData = {}
 
-    // Insert new customer
-    let insertData = {
-        businessId: businessId,
-        customerFirstName: customerFirstName ? customerFirstName : null,
-        customerLastName: customerLastName ? customerLastName : null,
-        customerBusinessName: customerBusinessName ? customerBusinessName : null,
-        customerEmail: customerEmail ? customerEmail : null,
-        customerCountryCode: customerCountryCode,
-        customerPostalAddress: customerPostalAddress ? customerPostalAddress : null,
-        customerAddress: customerAddress ? customerAddress : null,
-        customerPhoneNumber: customerPhoneNumber,
-        kraPin: kraPin ? kraPin : null,
-        customerProfilePicture: customerImageUrl ? customerImageUrl : null,
-        isBusiness: isBusiness ? isBusiness : typeof isBusiness === "number" ? isBusiness : 0,
-        createdAt: moment().format('YYYY-MM-DD HH:mm:ss'),
-        updatedAt: moment().format('YYYY-MM-DD HH:mm:ss')
-    }
+                            // Check params and push them to array
+                            if(customerFirstName)
+                                updateData.customerFirstName = customerFirstName
+                            if(customerLastName)
+                                updateData.customerLastName = customerLastName
+                            if(customerEmail)
+                                updateData.customerEmail = customerEmail
+                            if(customerBusinessName)
+                                updateData.customerBusinessName = customerBusinessName
+                            if(customerAddress)
+                                updateData.customerAddress = customerAddress
+                            if(customerCountryCode)
+                                updateData.customerCountryCode = customerCountryCode
+                            if(customerPhoneNumber)
+                                updateData.customerPhoneNumber = customerPhoneNumber
+                            if(customerImageUrl)
+                                updateData.customerProfilePicture = customerImageUrl
+                            if(customerPostalAddress)
+                                updateData.customerPostalAddress = customerPostalAddress
+                            if(kraPin)
+                                updateData.kraPin = kraPin
+                            if(isBusiness)
+                                updateData.isBusiness = isBusiness
 
-    customerModel.addNew(insertData, function(response) {
-        // Check if customer details were inserted
-        if(!response.error) {
-            res.send({
-                status: 'success',
-                data: null
+                            // Update data
+                            updateData.updatedAt = moment().format('YYYY-MM-DD HH:mm:ss')
+
+                            let updateVariable = {
+                                name: 'id',
+                                value: customerId
+                            }
+
+                            // Run update
+                            customerModel.updateCustomer(updateVariable, updateData, function(customerUpdateResponse) {
+                                if(customerUpdateResponse.affectedRows > 0) {
+                                    res.send({
+                                        status: 'success',
+                                        data: null
+                                    })
+                                } else {
+                                    res.status(400).send({
+                                        status: 'error',
+                                        message: 'There was are error updating customer details. Please try again or contact the support team if the issue persists.',
+                                        sqlMessage: customerUpdateResponse.sqlMessage ? customerUpdateResponse.sqlMessage : null
+                                    })
+                                }
+                            })
+
+                        } else {
+                            res.status(400).send({
+                                status: 'error',
+                                message: 'Could not perform action. User is not authorized.'
+                            })
+                        }
+
+                    } else {
+                        // Create new customer
+                        // Check if user has the permission to do so
+                        if(userPermissionsResponse[0].createCustomers === 1) {
+                            let insertData = {
+                                businessId: businessId,
+                                customerFirstName: customerFirstName ? customerFirstName : null,
+                                customerLastName: customerLastName ? customerLastName : null,
+                                customerBusinessName: customerBusinessName ? customerBusinessName : null,
+                                customerEmail: customerEmail ? customerEmail : null,
+                                customerCountryCode: customerCountryCode,
+                                customerPostalAddress: customerPostalAddress ? customerPostalAddress : null,
+                                customerAddress: customerAddress ? customerAddress : null,
+                                customerPhoneNumber: customerPhoneNumber,
+                                kraPin: kraPin ? kraPin : null,
+                                customerProfilePicture: customerImageUrl ? customerImageUrl : null,
+                                isBusiness: isBusiness ? isBusiness : typeof isBusiness === "number" ? isBusiness : 0,
+                                createdAt: moment().format('YYYY-MM-DD HH:mm:ss'),
+                                updatedAt: moment().format('YYYY-MM-DD HH:mm:ss')
+                            }
+
+                            customerModel.addNew(insertData, function(response) {
+                                // Check if customer details were inserted
+                                if(!response.error) {
+                                    res.send({
+                                        status: 'success',
+                                        data: null
+                                    })
+
+                                } else {
+                                    // Return error
+                                    res.status(400).send({
+                                        status: 'error',
+                                        message: response.text ? response.text : 'There was an error creating the customer. Please try again or contact support if the issue persists.',
+                                        sqlMessage: response.sqlMessage ? response.sqlMessage : null
+                                    })
+                                }        
+                            })
+                        } else {
+                            res.status(400).send({
+                                status: 'error',
+                                message: 'Could not perform action. User is not authorized.'
+                            })
+                        }
+                    }
+                } else {
+                    res.status(400).send({
+                        status: 'error',
+                        message: 'Could not perform action. There was an error retrieving user permissions.'
+                    })
+                }
             })
 
         } else {
-            // Return error
             res.status(400).send({
                 status: 'error',
-                message: response.text,
-                sqlMessage: response.sqlMessage ? response.sqlMessage : null
+                message: 'Please login with a valid user. User trying to perform action not found.'
             })
-        }        
+        }
     })
 }
 
