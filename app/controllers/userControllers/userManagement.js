@@ -151,7 +151,7 @@ exports.createUser = function(req, res) {
                                 updateObj.roleId = roleId
                             if(userImageUrl)
                                 updateObj.profilePicture = userImageUrl
-                            if(state !== null)
+                            if(state !== null && state <= 1)
                                 updateObj.state = state
 
                             // Update data

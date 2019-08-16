@@ -44,26 +44,29 @@ exports.getAll = function(req, res) {
 exports.new = function(req, res) {
     // Checking all parameters are available
     let businessId = req.userDetails.businessId
-    let productName = req.body['productName']
-    let productDescription = req.body['productDescription']
-    let productShortDescription = req.body['productShortDescription']
-    let productCategoryId = req.body['productCategoryId']
-    let availableFrom = req.body['availableFrom']
-    let availableTo = req.body['availableTo']
-    let sku = req.body['sku']
-    let price = parseFloat(req.body['price']) ? parseFloat(req.body['price']) : 0.00
+    let productName = req.body['productName'] ? req.body['productName'] :null
+    let productDescription = req.body['productDescription'] ? req.body['productDescription'] : null
+    let productShortDescription = req.body['productShortDescription'] ? req.body['productShortDescription'] : null
+    let productCategoryId = parseInt(req.body['productCategoryId']) !== undefined ? parseInt(req.body['productCategoryId']) : null
+    let availableFrom = req.body['availableFrom'] ? req.body['availableFrom'] : null
+    let availableTo = req.body['availableTo'] ? req.body['availableTo'] : null
+    let sku = req.body['sku'] ? req.body['sku'] : null
+    let price = parseFloat(req.body['price']) !== undefined ? parseFloat(req.body['price']) : 0.00
     let salePrice = parseFloat(req.body['price']) ? parseFloat(req.body['price']) : 0.00
     let unitPrice = parseFloat(req.body['unitPrice']) ? parseFloat(req.body['unitPrice']) : 0.00
-    let measurementUnitId = req.body['measurementUnitId']
-    let taxClassId = req.body['taxClassId']
-    let published = req.body['published']
+    let measurementUnitId = parseInt(req.body['measurementUnitId']) !== undefined ? parseInt(req.body['measurementUnitId']) : null
+    let taxClassId = req.body['taxClassId'] ? req.body['taxClassId'] : null
+    let published = parseInt(req.body['published']) !== undefined ? parseInt(req.body['published']) : null
     // New fields - Focus
-    let storageLocation = req.body['storageLocation'] // aisle No. etc
-    let sellAs = req.body['sellAs'] // CUSTOM or FULL
+    let storageLocation = req.body['storageLocation'] ? req.body['storageLocation'] : null // aisle No. etc
+    let sellAs = req.body['sellAs'] ? req.body['sellAs'] : null // CUSTOM or FULL
     let customSaleUnit = req.body['customSaleUnit'] // Only available if sellAs === CUSTOM
-    let measurement = req.body['measurement']
+    let measurement = parseFloat(req.body['measurement']) !== undefined ? parseFloat(req.body['measurement']) : null
     let qty = parseInt(req.body['qty']) ? parseInt(req.body['qty']) : 0 // Default - 0
     let productImage = req.file ? req.file : null
+    let productId = parseInt(req.body['id']) ? parseInt(req.body['id']) : null
+    let state = parseInt(req.body['state']) !== undefined ? parseInt(req.body['state']) : null
+    let initiateUserId = req.userDetails.id ? req.userDetails.id : null
 
     let errorArray = []
     if(!businessId) {errorArray.push({name: 'businessId', text: 'Missing user token.'})}
@@ -82,6 +85,9 @@ exports.new = function(req, res) {
         // Check if number
         if(!qty && typeof qty == "number") {errorArray.push({name: 'qty', text: 'Missing quantity field or wrong datatype. Please enter a number.'})}
         if(!unitPrice && typeof unitPrice !== 'number') {errorArray.push({name: 'unitPrice', text: 'Missing product unit price.'})}
+    }
+    if(sellAs !== 'FULL' || sellAs !== 'CUSTOM') {
+        errorArray.push({name: 'sellAs', text: 'Please enter a valid sellAs variable(Should be either CUSTOM or FULL).'})
     }
 
     if(errorArray.length > 0 ) {
@@ -113,78 +119,192 @@ exports.new = function(req, res) {
         }
     }
 
-    // Insert new product
-    let insertData = {
-        businessId: businessId,
-        productName: productName,
-        productDescription: productDescription,
-        productShortDescription: productShortDescription,
-        productCategoryId: productCategoryId ? productCategoryId : null,
-        productImage: productImageUrl ? productImageUrl : null,
-        availableFrom: availableFrom ? availableFrom : null,
-        availableTo: availableTo ? availableTo : null,
-        sku: sku ? sku : null,
-        sellAs: sellAs,
-        storageLocation: storageLocation,
-        customSaleUnit: customSaleUnit,
-        measurement: measurement,
-        qty: qty,
-        price: price,
-        salePrice: salePrice,
-        unitPrice: unitPrice,
-        measurementUnitId: measurementUnitId,
-        taxClassId: taxClassId ? taxClassId : null,
-        published: published,
-        createdAt: moment().format('YYYY-MM-DD HH:mm:ss'),
-        updatedAt: moment().format('YYYY-MM-DD HH:mm:ss')
-    }
+    // Get user details
+    userIdentityModel.getUser(initiateUserId, null, function(userResponse) {
+        if(userResponse) {
+            // Get user permissions
+            userIdentityModel.getUserPermissions(userResponse[0].userPermissionsId, function(userPermissionsResponse) {
+                if(userPermissionsResponse) {
+                    // Check if insert or update
+                    if(!productId) {
+                        // Check if user can create
+                        if(userPermissionsResponse[0].createProduct === 1) {
+                            // Insert new product
+                            let insertData = {
+                                businessId: businessId,
+                                productName: productName,
+                                productDescription: productDescription,
+                                productShortDescription: productShortDescription,
+                                productCategoryId: productCategoryId ? productCategoryId : null,
+                                productImage: productImageUrl ? productImageUrl : null,
+                                availableFrom: availableFrom ? availableFrom : null,
+                                availableTo: availableTo ? availableTo : null,
+                                sku: sku ? sku : null,
+                                sellAs: sellAs,
+                                storageLocation: storageLocation,
+                                customSaleUnit: customSaleUnit,
+                                measurement: measurement,
+                                qty: qty,
+                                price: price,
+                                salePrice: salePrice,
+                                unitPrice: unitPrice,
+                                measurementUnitId: measurementUnitId,
+                                taxClassId: taxClassId ? taxClassId : null,
+                                published: published,
+                                createdAt: moment().format('YYYY-MM-DD HH:mm:ss'),
+                                updatedAt: moment().format('YYYY-MM-DD HH:mm:ss')
+                            }
 
-    productModel.addNew(insertData, function(response) {
-        // Check if user details were inserted
-        if(!response.error) {
-            // Insert sub-products based on the sellAs field, quantity & measurement type
-            if(sellAs === "CUSTOM") {
-                // Upload subProductList
-                // Getting data
-                let subProductList = []
+                            productModel.addNew(insertData, function(response) {
+                                // Check if user details were inserted
+                                if(!response.error && response.insertId) {
+                                    // Insert sub-products based on the sellAs field, quantity & measurement type
+                                    // if(sellAs === "CUSTOM") {
+                                    //     // Upload subProductList
+                                    //     // Getting data
+                                    //     let subProductList = []
 
-                // Loop into list
-                for(let i = 0; i < qty; i++) {
-                    subProductList.push([response.insertId,measurement,measurementUnitId,1,moment().format('YYYY-MM-DD HH:mm:ss'),moment().format('YYYY-MM-DD HH:mm:ss')])
-                }
+                                    //     // Loop into list
+                                    //     for(let i = 0; i < qty; i++) {
+                                    //         subProductList.push([response.insertId,measurement,measurementUnitId,1,moment().format('YYYY-MM-DD HH:mm:ss'),moment().format('YYYY-MM-DD HH:mm:ss')])
+                                    //     }
 
-                // Insert to database
-                productModel.addSubProductList(subProductList, function(subProductsResponse) {
-                    if(subProductsResponse.insertId) {
-                        res.send({
-                            status: 'success',
-                            data: null
-                        })
+                                    //     // Insert to database
+                                    //     productModel.addSubProductList(subProductList, function(subProductsResponse) {
+                                    //         if(subProductsResponse.insertId) {
+                                    //             res.send({
+                                    //                 status: 'success',
+                                    //                 data: null
+                                    //             })
+                                    //         } else {
+                                    //             // No sub-products inserted
+                                    //             res.status(400).send({
+                                    //                 status: 'error',
+                                    //                 message: 'There was an error inserting the sub product list.',
+                                    //                 sqlMessage: response.sqlMessage ? response.sqlMessage : null
+                                    //             })
+                                    //         }
+                                    //     })
+                                    // } else {
+                                    //     // Inserted FULL Product
+                                    //     res.send({
+                                    //         status: 'success',
+                                    //         data: null
+                                    //     })
+                                    // }
+
+                                    // If product is successfully inserted
+                                    res.send({
+                                        status: 'success',
+                                        data: null
+                                    })
+
+                                } else {
+                                    // Return error
+                                    res.status(400).send({
+                                        status: 'error',
+                                        message: response.text ? response.text : 'There was an error creating the new product. Please try again. If the issue persists, kindly contact support.',
+                                        sqlMessage: response.sqlMessage ? response.sqlMessage : null
+                                    })
+                                }        
+                            })
+                        } else {
+                            res.status(400).send({
+                                status: 'error',
+                                message: 'Could not perform action. User is not authorized.'
+                            })
+                        }
                     } else {
-                        // No sub-products inserted
-                        res.status(400).send({
-                            status: 'error',
-                            message: 'There was an error inserting the sub product list.',
-                            sqlMessage: response.sqlMessage ? response.sqlMessage : null
-                        })
+                        // Check if user can create
+                        if(userPermissionsResponse[0].editProduct === 1) {
+                            // Gather updated information
+                            let updatedData = {}
+
+                            if(productImage)
+                                updatedData.productImage = productImage
+                            if(productName)
+                                updatedData.productName = productName
+                            if(productDescription)
+                                updatedData.productDescription = productDescription
+                            if(productShortDescription)
+                                updatedData.productShortDescription = productShortDescription
+                            if(productColor)
+                                updatedData.productColor = productColor
+                            if(productCategoryId)
+                                updatedData.productCategoryId = productCategoryId
+                            if(availableFrom)
+                                updatedData.availableFrom = availableFrom
+                            if(availableTo)
+                                updatedData.availableTo = availableTo
+                            if(sku)
+                                updatedData.sku = sku
+                            if(price)
+                                updatedData.price = price
+                            if(salePrice)
+                                updatedData.salePrice = salePrice
+                            if(unitPrice)
+                                updatedData.unitPrice = unitPrice
+                            if(measurementUnitId)
+                                updatedData.measurementUnitId = measurementUnitId
+                            if(taxClassId)
+                                updatedData.taxClassId = taxClassId
+                            if(published)
+                                updatedData.published = published
+                            if(storageLocation)
+                                updatedData.storageLocation = storageLocation
+                            if(sellAs)
+                                updatedData.sellAs = sellAs
+                            if(customSaleUnit)
+                                updatedData.customSaleUnit = customSaleUnit
+                            if(measurement)
+                                updatedData.measurement = measurement
+                            if(qty)
+                                updatedData.qty = qty
+                            if(productId)
+                                updatedData.id = productId
+                            if(state !== null && state <= 1)
+                                updatedData.state = state
+
+                            updatedData.updatedAt = moment().format('YYYY-MM-DD HH:mm:ss')
+
+                            // Update product
+                            productModel.updateProduct(productId, updatedData, function(updateProductResponse) {
+                                if(updateProductResponse.affectedRows > 0) {
+                                    // Return success
+                                    res.send({
+                                        status: 'success',
+                                        data: null
+                                    })
+                                } else {
+                                    // Error updating product
+                                    res.status(400).send({
+                                        status: 'error',
+                                        message: 'There was an error updating the product. Please try again. If the issue persists, contact an administrator.',
+                                        sqlMessage: updateProductResponse.sqlMessage ? updateProductResponse.sqlMessage : null
+                                    })
+                                }
+                            })
+                        } else {
+                            res.status(400).send({
+                                status: 'error',
+                                message: 'Could not perform action. User is not authorized.'
+                            })
+                        }
                     }
-                })
-            } else {
-                // Inserted FULL Product
-                res.send({
-                    status: 'success',
-                    data: null
-                })
-            }
+                } else {
+                    res.status(400).send({
+                        status: 'error',
+                        message: 'Could not perform action. There was an error retrieving user permissions.'
+                    })
+                }
+            })
 
         } else {
-            // Return error
             res.status(400).send({
                 status: 'error',
-                message: response.text,
-                sqlMessage: response.sqlMessage ? response.sqlMessage : null
+                message: 'Please login with a valid user. User trying to perform action not found.'
             })
-        }        
+        }
     })
 }
 
@@ -314,7 +434,7 @@ exports.createCategory = function(req, res) {
     let parentId = parseInt(req.body['parentId']) ? parseInt(req.body['parentId']) : null
     let categoryId = parseInt(req.body['id']) ? parseInt(req.body['id']) : null
     let state = parseInt(req.body['state']) !== undefined ? parseInt(req.body['state']) : null
-    
+
     // Check if all required parameters were passed
     let errorArray = []
     if(!businessId) {errorArray.push({name: 'businessId', text: 'Missing user token.'})}

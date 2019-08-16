@@ -191,7 +191,7 @@ exports.createRole = function(req, res) {
                                             if(roleDescription)
                                                 userRoleDetails.roleDescription = roleDescription
 
-                                            if(state !== null)
+                                            if(state !== null && state <= 1)
                                                 userRoleDetails.state = state
 
                                             userRoleDetails.updatedAt = moment().format('YYYY-MM-DD HH:mm:ss')
