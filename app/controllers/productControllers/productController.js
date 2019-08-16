@@ -308,10 +308,13 @@ exports.getMeasurementUnits = function(req, res) {
 exports.createCategory = function(req, res) {
     // Get params
     let businessId = req.userDetails.businessId
-    let productCategoryName = req.body['productCategoryName']
-    let productCategoryDesc = req.body['productCategoryDesc']
-    let parentId = req.body['parentId']
-
+    let initiateUserId = req.userDetails.id ? req.userDetails.id : null
+    let productCategoryName = req.body['productCategoryName'] ? req.body['productCategoryName'] : null
+    let productCategoryDesc = req.body['productCategoryDesc'] ? req.body['productCategoryDesc'] : null
+    let parentId = parseInt(req.body['parentId']) ? parseInt(req.body['parentId']) : null
+    let categoryId = parseInt(req.body['id']) ? parseInt(req.body['id']) : null
+    let state = parseInt(req.body['state']) !== undefined ? parseInt(req.body['state']) : null
+    
     // Check if all required parameters were passed
     let errorArray = []
     if(!businessId) {errorArray.push({name: 'businessId', text: 'Missing user token.'})}
@@ -329,37 +332,124 @@ exports.createCategory = function(req, res) {
         })
     }
 
-    // Insert data to the table
-    let categoryData = {
-        productCategoryName: productCategoryName,
-        productCategoryDesc: productCategoryDesc,
-        parentId: parentId ? parentId : null,
-        businessId: businessId,
-        createdAt: moment().format('YYYY-MM-DD HH:mm:ss'),
-        updatedAt: moment().format('YYYY-MM-DD HH:mm:ss')
-    }
+    // Get user details
+    userIdentityModel.getUser(initiateUserId, null, function(userResponse) {
+        if(userResponse) {
+            // Get user permissions
+            userIdentityModel.getUserPermissions(userResponse[0].userPermissionsId, function(userPermissionsResponse) {
+                if(userPermissionsResponse) {
+                    // Check if insert or update
+                    if(!categoryId) {
+                        // Check if user can create product category
+                        if(userPermissionsResponse[0].createProducts === 1) {
+                            // Insert data to the table
+                            let categoryData = {
+                                productCategoryName: productCategoryName,
+                                productCategoryDesc: productCategoryDesc,
+                                parentId: parentId ? parentId : null,
+                                businessId: businessId,
+                                createdAt: moment().format('YYYY-MM-DD HH:mm:ss'),
+                                updatedAt: moment().format('YYYY-MM-DD HH:mm:ss')
+                            }
 
-    productModel.insertProductCategory(categoryData, function(response) {
-        // Check if user details were inserted
-        if(!response.error) {
-            if(response.insertId) {
-                res.send({
-                    status: 'success',
-                    data: null
-                })
-            } else {
-                // No product category inserted
-                res.send({
-                    status: 'error',
-                    message: 'No new product category was inserted.'
-                })
-            }
+                            productModel.insertProductCategory(categoryData, function(response) {
+                                // Check if user details were inserted
+                                if(!response.error) {
+                                    if(response.insertId) {
+                                        res.send({
+                                            status: 'success',
+                                            data: null
+                                        })
+                                    } else {
+                                        // No product category inserted
+                                        res.send({
+                                            status: 'error',
+                                            message: 'There was an error creating the product category. Please try again. Contact support if the issue persists.'
+                                        })
+                                    }
+                                } else {
+                                    // Return error
+                                    res.send({
+                                        status: 'error',
+                                        message: response.text,
+                                        sqlMessage: response.sqlMessage ? response.sqlMessage : null
+                                    })
+                                }
+                            })
+                        } else {
+                            res.status(400).send({
+                                status: 'error',
+                                message: 'Could not perform action. User is not authorized.'
+                            })
+                        }
+                    } else {
+                        // Check if user can update product category
+                        if(userPermissionsResponse[0].editProducts === 1) {
+                            // Get category based on ID
+                            productModel.getProductCategory(categoryId, businessId, function(response) {
+                                if(!response.error && response.length > 0) {
+                                    // Do update
+                                    let categoryData = {}
+
+                                    // Check for updated information
+                                    if(productCategoryName)
+                                        categoryData.productCategoryName = productCategoryName
+
+                                    if(productCategoryDesc)
+                                        categoryData.productCategoryDesc = productCategoryDesc
+
+                                    if(parentId)
+                                        categoryData.parentId = parentId
+
+                                    if(state !== null && state <= 1)
+                                        categoryData.state = state
+                                    
+                                    // Update date
+                                    categoryData.updatedAt = moment().format('YYYY-MM-DD HH:mm:ss')
+
+                                    // Run update
+                                    productModel.updateProductCategory(categoryId, categoryData, function(categoryUpdateResponse) {
+                                        if(categoryUpdateResponse.affectedRows > 0) {
+                                            res.send({
+                                                status: 'success',
+                                                data: null
+                                            })
+                                        } else {
+                                            res.status(400).send({
+                                                status: 'error',
+                                                message: 'There was an error updating the product category. Please try again or contact the support team if the issue persists.',
+                                                sqlMessage: categoryUpdateResponse.sqlMessage ? categoryUpdateResponse.sqlMessage : null
+                                            })
+                                        }
+                                    })
+
+                                } else {
+                                    res.status(400).send({
+                                        status: 'error',
+                                        message: 'There was an error retrieving the product category for update. Please make sure the category exists.',
+                                        sqlMessage: response.sqlMessage ? response.sqlMessage : null
+                                    })
+                                }
+                            })
+                        } else {
+                            res.status(400).send({
+                                status: 'error',
+                                message: 'Could not perform action. User is not authorized.'
+                            })
+                        }
+                    }
+                } else {
+                    res.status(400).send({
+                        status: 'error',
+                        message: 'Could not perform action. There was an error retrieving user permissions.'
+                    })
+                }
+            })
+
         } else {
-            // Return error
-            res.send({
+            res.status(400).send({
                 status: 'error',
-                message: response.text,
-                sqlMessage: response.sqlMessage ? response.sqlMessage : null
+                message: 'Please login with a valid user. User trying to perform action not found.'
             })
         }
     })

@@ -21,6 +21,7 @@ exports.createUser = function(req, res) {
     let phoneCountryCode = req.body['phoneCountryCode'] ? req.body['phoneCountryCode'] : null
     let userPhoneNumber = req.body['userPhoneNumber'] ? req.body['userPhoneNumber'] : null
     let initiateUserId = req.userDetails.id ? req.userDetails.id : null
+    let state = parseInt(req.body['state']) !== undefined ? parseInt(req.body['state']) : null
 
     // Check if required parameters have been passed
     let errorArray = []
@@ -150,6 +151,8 @@ exports.createUser = function(req, res) {
                                 updateObj.roleId = roleId
                             if(userImageUrl)
                                 updateObj.profilePicture = userImageUrl
+                            if(state !== null)
+                                updateObj.state = state
 
                             // Update data
                             updateObj.updatedAt = moment().format('YYYY-MM-DD HH:mm:ss')

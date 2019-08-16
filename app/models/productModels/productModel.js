@@ -9,9 +9,9 @@ let pool  = mysql.createPool({
 
 // Get all products
 exports.getAll = function(businessId = null, callback) {
-    let sql = "SELECT products.*, measurementUnits.measurementName, measurementUnits.measurementAbbreviation, productCategories.productCategoryName, productCategories.parentId as productCategoryParentId FROM ?? LEFT JOIN ?? ON ?? = ?? LEFT JOIN ?? ON ?? = ?? WHERE ?? = ? AND ?? = ?";
+    let sql = "SELECT products.*, measurementUnits.measurementName, measurementUnits.measurementAbbreviation, productCategories.productCategoryName, productCategories.parentId as productCategoryParentId FROM ?? LEFT JOIN ?? ON ?? = ?? LEFT JOIN ?? ON ?? = ?? WHERE ?? = ?";
     
-    let inserts = ['products', 'measurementUnits', 'products.measurementUnitId', 'measurementUnits.id', 'productCategories', 'products.productCategoryId', 'productCategories.id', 'products.businessId', businessId, 'products.state', 1];
+    let inserts = ['products', 'measurementUnits', 'products.measurementUnitId', 'measurementUnits.id', 'productCategories', 'products.productCategoryId', 'productCategories.id', 'products.businessId', businessId];
     sql = mysql.format(sql, inserts);
 
     pool.query(sql, function (error, results, fields) {
@@ -76,9 +76,9 @@ exports.addSubProductList = function(subProductList = null, callback) {
 }
 
 exports.getMeasurementUnits = function(callback) {
-    let sql = "SELECT * FROM ?? WHERE ?? = ?";
+    let sql = "SELECT * FROM ??";
     
-    let inserts = ['measurementUnits', 'state', 1];
+    let inserts = ['measurementUnits'];
     sql = mysql.format(sql, inserts);
 
     pool.query(sql, function (error, results, fields) {
@@ -122,9 +122,9 @@ exports.insertProductCategory = function(categoryData, callback) {
 }
 
 exports.getAllCategories = function(businessId = null, callback) {
-    let sql = "SELECT * FROM ?? WHERE ?? = ? AND ?? = ?";
+    let sql = "SELECT * FROM ?? WHERE ?? = ?";
     
-    let inserts = ['productCategories', 'businessId', businessId, 'state', 1];
+    let inserts = ['productCategories', 'businessId', businessId];
     sql = mysql.format(sql, inserts);
 
     pool.query(sql, function (error, results, fields) {
@@ -327,4 +327,54 @@ exports.deleteProductCategory = function(updateVariables, updateData, callback) 
             callback(results)
         }
     });
+}
+
+// Get product category
+exports.getProductCategory = function(roleId = null, businessId = null, callback) {
+    let sql = "SELECT * FROM ?? WHERE ?? = ? AND ?? = ?";
+    
+    let inserts = ['productCategories', 'businessId', businessId, 'id', roleId];
+
+    sql = mysql.format(sql, inserts);
+
+    pool.query(sql, function (error, results, fields) {
+        if (error) {
+            callback({
+                error: true,
+                text: 'There was an error retrieving the product category.',
+                sqlMessage: error.sqlMessage 
+            })
+        } else {
+            if(results && results.length > 0) {
+                callback(results)
+            } else {
+                // No users exists
+                callback({
+                    error: true,
+                    text: 'No product category found.'
+                })
+            }
+        }
+    });
+}
+
+// Update product category
+exports.updateProductCategory = function(categoryId = null, updateDetails = null, callback) {
+    // If codes match, update entry
+    let sql = "UPDATE ?? SET ? WHERE ?? = ?";
+
+    let inserts = ['productCategories', updateDetails, 'id', categoryId];
+    sql = mysql.format(sql, inserts);
+
+    pool.query(sql, function (error, results, fields) {
+        if (error) {
+            callback({
+                error: true,
+                text: 'There was an error updating the category Id.',
+                sqlMessage: error.sqlMessage
+            })
+        } else {
+            callback(results)
+        }
+    });    
 }

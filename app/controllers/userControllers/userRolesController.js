@@ -30,7 +30,7 @@ exports.createRole = function(req, res) {
     let deleteCustomers  = req.body['deleteCustomers']
     let makeSales = req.body['makeSales']
     let viewSales = req.body['viewSales']
-    let state = parseInt(req.body['state']) ? parseInt(req.body['state']) : null
+    let state = parseInt(req.body['state']) !== undefined ? parseInt(req.body['state']) : null
 
     // Check if required parameters have been passed
     let errorArray = []
@@ -191,7 +191,7 @@ exports.createRole = function(req, res) {
                                             if(roleDescription)
                                                 userRoleDetails.roleDescription = roleDescription
 
-                                            if(state)
+                                            if(state !== null)
                                                 userRoleDetails.state = state
 
                                             userRoleDetails.updatedAt = moment().format('YYYY-MM-DD HH:mm:ss')
