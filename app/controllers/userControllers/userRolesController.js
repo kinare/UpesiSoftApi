@@ -47,15 +47,11 @@ exports.createRole = function(req, res) {
         })
     }
 
-    debugger
-
     // Get user details
     userIdentityModel.getUser(initiateUserId, null, function(userResponse) {
         if(userResponse) {
-            debugger
             // Get user permissions
             userIdentityModel.getUserPermissions(userResponse[0].userPermissionsId, function(userPermissionsResponse) {
-                debugger
                 if(userPermissionsResponse) {
                     // Check if insert or update
                     if(!roleId) {
@@ -133,12 +129,10 @@ exports.createRole = function(req, res) {
                             })
                         }
                     } else {
-                        // Check if user can create
+                        // Check if user can edit
                         if(userPermissionsResponse[0].editUserRoles === 1) {
-                            debugger
                             // Get role based on ID
                             userManagementModel.getUserRole(roleId, businessId, function(response) {
-                                debugger
                                 if(!response.error && response.length > 0) {
                                     // Update permissions; Check which permissions were updated
                                     let userPermissions = {}
@@ -183,11 +177,8 @@ exports.createRole = function(req, res) {
                                     // Update date
                                     userPermissions.updatedAt = moment().format('YYYY-MM-DD HH:mm:ss')
 
-                                    debugger
-
                                     // Update user permissions
                                     userManagementModel.updatePermissions(response[0].userPermissionsId, userPermissions, function(updatePermissionsResponse) {
-                                        debugger
                                         if(updatePermissionsResponse.affectedRows > 0) {
                                             // Insert User Category Details
                                             let userRoleDetails = {}
@@ -203,7 +194,6 @@ exports.createRole = function(req, res) {
                                             
                                             // Insert Category Details
                                             userManagementModel.updateUserRole(response[0].userPermissionsId, businessId, userRoleDetails, function(updateRoleResponse) {
-                                                debugger
                                                 if(updateRoleResponse.affectedRows > 0) {
                                                     // Return success
                                                     res.send({

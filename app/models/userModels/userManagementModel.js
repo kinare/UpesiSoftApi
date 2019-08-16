@@ -141,7 +141,7 @@ exports.getAllUserRoles = function(businessId = null, callback) {
 exports.getUserRole = function(roleId = null, businessId = null, callback) {
     let sql = "SELECT * FROM ?? WHERE ?? = ? AND ?? = ? AND ?? = ?";
     
-    let inserts = ['userRoles', 'userRoles.businessId', businessId, 'id', roleId, 'userRoles.state', 1];
+    let inserts = ['userRoles', 'businessId', businessId, 'id', roleId, 'state', 1];
 
     sql = mysql.format(sql, inserts);
 
