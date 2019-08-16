@@ -110,7 +110,7 @@ exports.getAllUsers = function(businessId = null, callback) {
 
 // Get all user roles + global users
 exports.getAllUserRoles = function(businessId = null, callback) {
-    let sql = "SELECT userRoles.id, userRoles.roleName, userRoles.roleType, userRoles.roleDescription, userRoles.userPermissionsId, userRoles.createdAt, userRoles.updatedAt, userRoles.state as userRoleState, userPermissions.* FROM ?? LEFT JOIN ?? ON ?? = ?? WHERE ?? = ? OR ?? IS NULL";
+    let sql = "SELECT userRoles.id, userRoles.roleName, userRoles.roleType, userRoles.roleDescription, userRoles.userPermissionsId, userRoles.createdAt, userRoles.updatedAt, userRoles.state, userPermissions.* FROM ?? LEFT JOIN ?? ON ?? = ?? WHERE ?? = ? OR ?? IS NULL";
     
     let inserts = ['userRoles', 'userPermissions', 'userPermissions.id', 'userRoles.userPermissionsId', 'userRoles.businessId', businessId, 'userRoles.businessId'];
 
