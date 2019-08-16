@@ -55,7 +55,7 @@ exports.new = function(req, res) {
     let kraPin = req.body['kraPin']
     let customerProfilePicture = req.file ? req.file : null
     let initiateUserId = req.userDetails.id ? req.userDetails.id : null
-    let customerId = req.body['customerId'] ? req.body['customerId'] : null
+    let customerId = req.body['id'] ? req.body['id'] : null
 
     let errorArray = []
     if(!businessId) {errorArray.push({name: 'businessId', text: 'Missing user token.'})}

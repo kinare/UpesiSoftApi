@@ -9,7 +9,7 @@ exports.createRole = function(req, res) {
     let businessId = req.userDetails.businessId
     let roleDescription = req.body['roleDescription']
     let initiateUserId = req.userDetails.id ? req.userDetails.id : null
-    let roleId = parseInt(req.body['roleId']) ? parseInt(req.body['roleId']) : null
+    let roleId = parseInt(req.body['id']) ? parseInt(req.body['id']) : null
 
     // Getting permissions
     let createUsers = req.body['createUsers']
