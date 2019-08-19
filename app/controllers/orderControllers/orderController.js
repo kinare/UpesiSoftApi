@@ -149,16 +149,6 @@ exports.new = function(req, res) {
                                     productModel.addSubProductList(newSubProduct, function(subProductInsertResponse) {
                                         if(subProductInsertResponse.insertId) {
                                             console.log('Sub product successfully inserted.')
-                                            // Add sub Product to order List
-                                            let newSubProductItem = [response.insertId,item.productId,subProductInsertResponse.insertId,item.sellAs,null,item.soldMeasurement,item.measurementBefore,item.measurementAfter,parseFloat(item.price),1,moment().format('YYYY-MM-DD HH:mm:ss'),moment().format('YYYY-MM-DD HH:mm:ss')]
-
-                                            orderModel.insertOrderItems(newSubProductItem, function(subProductOrderItemResponse) {
-                                                if(subProductOrderItemResponse.insertId) {
-                                                    console.log('New Sub Product successfully inserted to order item list.')
-                                                } else {
-                                                    console.log('New Sub Product NOT inserted to order item list.')
-                                                }
-                                            })
 
                                         } else {
                                             // No sub-products inserted
