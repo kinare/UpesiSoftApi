@@ -70,37 +70,70 @@ exports.new = function(req, res) {
                 let insertOrderItemDetails = []
 
                 if(item.sellAs === "CUSTOM") {
-                    // Required data: subProductId, productId, soldMeasurement
-                    insertOrderItemDetails = [response.insertId,item.productId,item.subProductId,item.sellAs,null,item.soldMeasurement,item.measurementBefore,item.measurementAfter,parseFloat(item.price),1,moment().format('YYYY-MM-DD HH:mm:ss'),moment().format('YYYY-MM-DD HH:mm:ss')]
+                    // Check if it has a primary product ID(primaryProductId)
+                    if(item.primaryProductId) {
+                        // Required data: subProductId, productId, soldMeasurement
+                        insertOrderItemDetails = [response.insertId,item.productId,item.subProductId,item.sellAs,null,item.soldMeasurement,item.measurementBefore,item.measurementAfter,parseFloat(item.price),1,moment().format('YYYY-MM-DD HH:mm:ss'),moment().format('YYYY-MM-DD HH:mm:ss')]
 
-                    // Update product details i.e. update measurements & qty etc
-                    // Update sub product details
-                    // Get product details
-                    productModel.getSubProduct(item.subProductId, function(subProductResponse) {
-                        // If there is a product
-                        if(!subProductResponse.error && subProductResponse) {
-                            // Update product details i.e. update measurements & qty etc
-                            // Check if measurement is equal or more than what is available
-                            if(subProductResponse[0].measurement >= item.soldMeasurement) {
-                                let subProductUpdateDetails = {
-                                    measurement: item.measurementAfter
-                                }
-            
-                                // Update product
-                                productModel.updateSubProduct(item.subProductId, subProductUpdateDetails, function(updateSubProductResponse) {
-                                    if(updateSubProductResponse.affectedRows > 0) {
-                                        console.log('Sub product updated.')
-                                    } else {
-                                        console.log('Sub product not updated.')
+                        // Update product details i.e. update measurements & qty etc
+                        // Update sub product details
+                        // Get product details
+                        productModel.getSubProduct(item.subProductId, function(subProductResponse) {
+                            // If there is a product
+                            if(!subProductResponse.error && subProductResponse) {
+                                // Update product details i.e. update measurements & qty etc
+                                // Check if measurement is equal or more than what is available
+                                if(subProductResponse[0].measurement >= item.soldMeasurement) {
+                                    let subProductUpdateDetails = {
+                                        measurement: item.measurementAfter
                                     }
-                                })
+                
+                                    // Update product
+                                    productModel.updateSubProduct(item.subProductId, subProductUpdateDetails, function(updateSubProductResponse) {
+                                        if(updateSubProductResponse.affectedRows > 0) {
+                                            console.log('Sub product updated.')
+                                        } else {
+                                            console.log('Sub product not updated.')
+                                        }
+                                    })
+                                } else {
+                                    console.log('The measurement sold is greater than the measurement available.')
+                                }
                             } else {
-                                console.log('The measurement sold is greater than the measurement available.')
+                                console.log('There was no sub-product found with that ID.')
                             }
-                        } else {
-                            console.log('There was no sub-product found with that ID.')
-                        }
-                    })                    
+                        })
+                    } else {
+                        // If custom product being sold as full
+                        insertOrderItemDetails = [response.insertId,item.productId,null,item.sellAs,item.qty,null,null,null,parseFloat(item.price),1,moment().format('YYYY-MM-DD HH:mm:ss'),moment().format('YYYY-MM-DD HH:mm:ss')]
+    
+                        // Get product details
+                        productModel.getProduct(null, item.productId, function(productResponse) {
+                            // If there is a product
+                            if(!productResponse.error && productResponse) {
+                                // Update product details i.e. update measurements & qty etc
+                                // Check if qty exists
+                                if(productResponse[0].qty >= item.qty) {
+                                    let productUpdateDetails = {
+                                        qty: productResponse[0].qty - item.qty
+                                    }
+                
+                                    // Update product
+                                    productModel.updateProduct(item.productId, productUpdateDetails, function(updateProductResponse) {
+                                        if(updateProductResponse.affectedRows > 0) {
+                                            console.log('Product updated.')
+                                        } else {
+                                            console.log('Product not updated.')
+                                        }
+                                    })
+                                } else {
+                                    console.log('Product available qty is less than what is being sold.')
+                                }
+                            } else {
+                                console.log('There was no product found with that ID.')
+                            }
+                        })
+                    }                
 
                 } else if(item.sellAs === "FULL") {
                     // If full, check: qty, productId
