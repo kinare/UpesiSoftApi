@@ -9,7 +9,7 @@ let pool  = mysql.createPool({
 
 // Get all products
 exports.getAll = function(businessId = null, callback) {
-    let sql = "SELECT products.*, measurementUnits.measurementName, measurementUnits.measurementAbbreviation, productCategories.productCategoryName, productCategories.parentId as productCategoryParentId FROM ?? LEFT JOIN ?? ON ?? = ?? LEFT JOIN ?? ON ?? = ?? WHERE ?? = ?";
+    let sql = "SELECT products.*, measurementUnits.measurementName, measurementUnits.measurementAbbreviation, productCategories.productCategoryName, productCategories.parentId as productCategoryParentId, (SELECT COUNT(*) FROM subProductList WHERE subProductList.primaryProductId = products.id) as pieces FROM ?? LEFT JOIN ?? ON ?? = ?? LEFT JOIN ?? ON ?? = ?? WHERE ?? = ?";
     
     let inserts = ['products', 'measurementUnits', 'products.measurementUnitId', 'measurementUnits.id', 'productCategories', 'products.productCategoryId', 'productCategories.id', 'products.businessId', businessId];
     sql = mysql.format(sql, inserts);
