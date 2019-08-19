@@ -112,6 +112,7 @@ exports.new = function(req, res) {
                         productModel.getProduct(null, item.productId, function(productResponse) {
                             // Check if full or custom
                             if(item.measurementAfter === productResponse[0].measurement) {
+                                console.log('Product being sold as full.')
                                 // If product has been sold as full
                                 // If there is a product
                                 if(!productResponse.error && productResponse) {
@@ -137,18 +138,19 @@ exports.new = function(req, res) {
                                     console.log('There was no product found with that ID.')
                                 }
                             } else {
+                                console.log('Product being sold as CUSTOM. New sub products being created.')
                                 // If sale creates subProducts
                                 // Add new sub Products with remaining measurement
                                 // Get new sub products
                                 for(let xyz = 0; xyz < item.qty; xyz++) {
                                     // Add new subProduct
-                                    let newSubProduct = [item.productId,item.measurementAfter,item.measurementUnitId,1,moment().format('YYYY-MM-DD HH:mm:ss'),moment().format('YYYY-MM-DD HH:mm:ss')]
+                                    let newSubProduct = [[item.productId,item.measurementAfter,item.measurementUnitId,1,moment().format('YYYY-MM-DD HH:mm:ss'),moment().format('YYYY-MM-DD HH:mm:ss')]]
 
                                     productModel.addSubProductList(newSubProduct, function(subProductInsertResponse) {
                                         if(subProductInsertResponse.insertId) {
                                             console.log('Sub product successfully inserted.')
                                             // Add sub Product to order List
-                                            let newSubProductItem = [[response.insertId,item.productId,subProductInsertResponse.insertId,item.sellAs,null,item.soldMeasurement,item.measurementBefore,item.measurementAfter,parseFloat(item.price),1,moment().format('YYYY-MM-DD HH:mm:ss'),moment().format('YYYY-MM-DD HH:mm:ss')]]
+                                            let newSubProductItem = [response.insertId,item.productId,subProductInsertResponse.insertId,item.sellAs,null,item.soldMeasurement,item.measurementBefore,item.measurementAfter,parseFloat(item.price),1,moment().format('YYYY-MM-DD HH:mm:ss'),moment().format('YYYY-MM-DD HH:mm:ss')]
 
                                             orderModel.insertOrderItems(newSubProductItem, function(subProductOrderItemResponse) {
                                                 if(subProductOrderItemResponse.insertId) {
@@ -166,6 +168,18 @@ exports.new = function(req, res) {
                                 }
 
                                 // Update main product - subtract qty
+                                let productUpdateDetails = {
+                                    qty: productResponse[0].qty - item.qty
+                                }
+            
+                                // Update product
+                                productModel.updateProduct(item.productId, productUpdateDetails, function(updateProductResponse) {
+                                    if(updateProductResponse.affectedRows > 0) {
+                                        console.log('Product updated.')
+                                    } else {
+                                        console.log('Product not updated.')
+                                    }
+                                })
                             }
                         })
                     }                
