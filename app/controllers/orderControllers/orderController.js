@@ -72,6 +72,7 @@ exports.new = function(req, res) {
                 if(item.sellAs === "CUSTOM") {
                     // Check if it has a primary product ID(primaryProductId)
                     if(item.primaryProductId) {
+                        // Sell as sub product
                         // Required data: subProductId, productId, soldMeasurement
                         insertOrderItemDetails = [response.insertId,item.productId,item.subProductId,item.sellAs,null,item.soldMeasurement,item.measurementBefore,item.measurementAfter,parseFloat(item.price),1,moment().format('YYYY-MM-DD HH:mm:ss'),moment().format('YYYY-MM-DD HH:mm:ss')]
 
@@ -105,32 +106,63 @@ exports.new = function(req, res) {
                         })
                     } else {
                         // If custom product being sold as full
-                        insertOrderItemDetails = [response.insertId,item.productId,null,item.sellAs,item.qty,null,null,null,parseFloat(item.price),1,moment().format('YYYY-MM-DD HH:mm:ss'),moment().format('YYYY-MM-DD HH:mm:ss')]
+                        insertOrderItemDetails = [response.insertId,item.productId,null,item.sellAs,item.qty,item.soldMeasurement,item.measurementBefore,item.measurementAfter,parseFloat(item.price),1,moment().format('YYYY-MM-DD HH:mm:ss'),moment().format('YYYY-MM-DD HH:mm:ss')]
     
                         // Get product details
                         productModel.getProduct(null, item.productId, function(productResponse) {
-                            // If there is a product
-                            if(!productResponse.error && productResponse) {
-                                // Update product details i.e. update measurements & qty etc
-                                // Check if qty exists
-                                if(productResponse[0].qty >= item.qty) {
-                                    let productUpdateDetails = {
-                                        qty: productResponse[0].qty - item.qty
-                                    }
-                
-                                    // Update product
-                                    productModel.updateProduct(item.productId, productUpdateDetails, function(updateProductResponse) {
-                                        if(updateProductResponse.affectedRows > 0) {
-                                            console.log('Product updated.')
-                                        } else {
-                                            console.log('Product not updated.')
+                            // Check if full or custom
+                            if(item.measurementAfter === productResponse[0].measurement) {
+                                // If product has been sold as full
+                                // If there is a product
+                                if(!productResponse.error && productResponse) {
+                                    // Update product details i.e. update measurements & qty etc
+                                    // Check if qty exists
+                                    if(productResponse[0].qty >= item.qty) {
+                                        let productUpdateDetails = {
+                                            qty: productResponse[0].qty - item.qty
                                         }
-                                    })
+                    
+                                        // Update product
+                                        productModel.updateProduct(item.productId, productUpdateDetails, function(updateProductResponse) {
+                                            if(updateProductResponse.affectedRows > 0) {
+                                                console.log('Product updated.')
+                                            } else {
+                                                console.log('Product not updated.')
+                                            }
+                                        })
+                                    } else {
+                                        console.log('Product available qty is less than what is being sold.')
+                                    }
                                 } else {
-                                    console.log('Product available qty is less than what is being sold.')
+                                    console.log('There was no product found with that ID.')
                                 }
                             } else {
-                                console.log('There was no product found with that ID.')
+                                // If sale creates subProducts
+                                // Add new sub Products with remaining measurement
+                                // Get new sub products
+                                for(let xyz = 0; xyz < item.qty; xyz++) {
+                                    // Add new subProduct
+                                    let newSubProduct = [item.productId,item.measurementAfter,item.measurementUnitId,1,moment().format('YYYY-MM-DD HH:mm:ss'),moment().format('YYYY-MM-DD HH:mm:ss')]
+
+                                    productModel.addSubProductList(newSubProduct, function(subProductInsertResponse) {
+                                        if(subProductInsertResponse.insertId) {
+                                            // Add sub Product to order List
+                                            let newSubProductItem = [response.insertId,item.productId,subProductInsertResponse.insertId,item.sellAs,null,item.soldMeasurement,item.measurementBefore,item.measurementAfter,parseFloat(item.price),1,moment().format('YYYY-MM-DD HH:mm:ss'),moment().format('YYYY-MM-DD HH:mm:ss')]
+
+                                            orderModel.insertOrderItems(newSubProductItem, function(subProductOrderItemResponse) {
+                                                if(subProductOrderItemResponse.insertId) {
+                                                    console.log('New Sub Product successfully inserted to order item list.')
+                                                } else {
+                                                    console.log('New Sub Product NOT inserted to order item list.')
+                                                }
+                                            })
+
+                                        } else {
+                                            // No sub-products inserted
+                                            console.log(subProductInsertResponse.sqlMessage ? subProductInsertResponse.sqlMessage : 'There was an error creating a sub Product for order ' + response.insertId)
+                                        }
+                                    })
+                                }
                             }
                         })
                     }                
