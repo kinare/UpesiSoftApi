@@ -2,6 +2,7 @@ var express = require('express');
 var router = express.Router();
 const userController = require('../app/controllers/userControllers/userController')
 const productController = require('../app/controllers/productControllers/productController')
+const productStockController = require('../app/controllers/productControllers/productStockController')
 const imageController = require('../app/controllers/imageControllers/imageController')
 const productImportController = require('../app/controllers/productControllers/productImportController')
 var multer = require('multer')
@@ -26,5 +27,8 @@ router.post('/v1/products/image/upload', [userController.verifyUserToken, upload
 
 // Import products
 router.post('v1/products/import', productImportController.import)
+
+// Restock products
+router.post('/v1/product/restock', userController.verifyUserToken, productStockController.restockInitiate)
 
 module.exports = router;

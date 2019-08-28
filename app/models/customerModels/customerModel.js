@@ -35,6 +35,34 @@ exports.getAll = function(businessId = null, callback) {
     });
 }
 
+// Get single customer
+exports.getCustomer = function(customerId = null, callback) {
+    let sql = "SELECT * FROM ?? WHERE ?? = ?";
+    
+    let inserts = ['customers', 'id', customerId];
+    sql = mysql.format(sql, inserts);
+
+    pool.query(sql, function (error, results, fields) {
+        if (error) {
+            callback({
+                error: true,
+                text: 'There was an error retrieving customer details.',
+                sqlMessage: error.sqlMessage 
+            })
+        } else {
+            if(results && results.length > 0) {
+                callback(results)
+            } else {
+                // No customer exists
+                callback({
+                    error: true,
+                    text: 'There was no customer found.'
+                })
+            }
+        }
+    });
+}
+
 // Add new customer
 exports.addNew = function(insertData = null, callback) {
     let sql = "INSERT INTO ?? SET ?";

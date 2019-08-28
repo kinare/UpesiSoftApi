@@ -15,10 +15,9 @@ exports.send = function(mailOptions = null, callback) {
         if(error) {
             console.log(error);
             callback({error: error})
-
         } else {
             console.log('Email sent: ' + info.response);
-            callback(info)
+            callback(true)
         }
     });
 }

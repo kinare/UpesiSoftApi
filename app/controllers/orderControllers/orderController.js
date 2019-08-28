@@ -228,7 +228,7 @@ exports.new = function(req, res) {
                         sqlMessage: response.sqlMessage ? response.sqlMessage : null
                     })
                 }
-            })            
+            })
 
         } else {
             // Return error

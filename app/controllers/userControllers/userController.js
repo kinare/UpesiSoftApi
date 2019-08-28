@@ -34,7 +34,7 @@ exports.verifyUserToken = function(req, res, next) {
     }catch(e){
         res.status(400).send({
             status: 'error',
-            message: 'There was an error verifying the user.'
+            message: 'There was an error verifying the user. Please ensure that the token has not been tampered with.'
         })
     }
 }
@@ -239,9 +239,9 @@ exports.activate = function(req, res) {
             if(response.affectedRows > 0) {
                 // Send successful activation link
                 let mailOptions = {
-                    from: 'Focus ERP <no-reply@upesisoft.com>',
+                    from: process.env.BUSINESS_NAME + ' <no-reply@upesisoft.com>',
                     to: email,
-                    subject: 'Successful Activation - Focus ERP',
+                    subject: process.env.BUSINESS_NAME + 'Successful Activation',
                     html: "<p>Your account has been successfully activated! Login <a href='https://www.focus.upesisoft.com/auth/login'>here</a> to access the platform.</p><p>Regards,</p><p>The Focus ERP Team</p>"
                 }
 
@@ -303,9 +303,9 @@ exports.resetInitiate = function(req, res) {
                     let resetPasswordUrl = 'https://focus.upesisoft.com/auth/password/' + token
         
                     let mailOptions = {
-                        from: 'Focus ERP <no-reply@upesisoft.com>',
+                        from: process.env.BUSINESS_NAME + ' <no-reply@upesisoft.com>',
                         to: email,
-                        subject: 'Reset Password - Focus ERP',
+                        subject: process.env.BUSINESS_NAME + 'Reset Password',
                         html: "<p>To reset your password, click <a href=" + resetPasswordUrl + ">here</a> and follow the instructions.</p><p>If you did not make this request, ignore this email.</p><p>Regards,</p><p>The Focus ERP Team</p>"
                     }
         

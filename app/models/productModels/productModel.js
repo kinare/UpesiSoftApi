@@ -149,9 +149,9 @@ exports.getAllCategories = function(businessId = null, callback) {
 }
 
 exports.getSubProducts = function(productId = null, callback) {
-    let sql = "SELECT subProductList.*, measurementUnits.measurementAbbreviation, measurementUnits.measurementName, products.productName, products.sku, products.price, products.salePrice, products.unitPrice FROM ?? LEFT JOIN ?? ON ?? = ?? LEFT JOIN ?? ON ?? = ?? WHERE ?? = ? AND ?? = ?";
+    let sql = "SELECT subProductList.*, measurementUnits.measurementAbbreviation, measurementUnits.measurementName, products.productName, products.sku, products.price, products.salePrice, products.unitPrice FROM ?? LEFT JOIN ?? ON ?? = ?? LEFT JOIN ?? ON ?? = ?? WHERE ?? = ?";
     
-    let inserts = ['subProductList', 'measurementUnits', 'subProductList.measurementUnitId', 'measurementUnits.id', 'products', 'subProductList.primaryProductId', 'products.id', 'primaryProductId', productId, 'subProductList.state', 1];
+    let inserts = ['subProductList', 'measurementUnits', 'subProductList.measurementUnitId', 'measurementUnits.id', 'products', 'subProductList.primaryProductId', 'products.id', 'primaryProductId', productId];
     sql = mysql.format(sql, inserts);
 
     pool.query(sql, function (error, results, fields) {
@@ -176,9 +176,9 @@ exports.getSubProducts = function(productId = null, callback) {
 }
 
 exports.getProduct = function(businessId = null, productId = null, callback) {
-    let sql = "SELECT * FROM ?? WHERE ?? = ? AND ?? = ?";
+    let sql = "SELECT * FROM ?? WHERE ?? = ?";
     
-    let inserts = ['products', 'state', 1, 'id', productId];
+    let inserts = ['products', 'id', productId];
 
     if(businessId) {
         sql += ' AND businessId = ?'
@@ -209,9 +209,9 @@ exports.getProduct = function(businessId = null, productId = null, callback) {
 }
 
 exports.getSubProduct = function(subProductId = null, callback) {
-    let sql = "SELECT * FROM ?? WHERE ?? = ? AND ?? = ?";
+    let sql = "SELECT * FROM ?? WHERE ?? = ?";
     
-    let inserts = ['subProductList', 'state', 1, 'id', subProductId];
+    let inserts = ['subProductList', 'id', subProductId];
     sql = mysql.format(sql, inserts);
 
     pool.query(sql, function (error, results, fields) {
