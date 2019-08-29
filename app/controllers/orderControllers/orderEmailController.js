@@ -45,7 +45,7 @@ exports.sendCustomerOrderEmail = function(req, res) {
 // Send receipt to customer
 exports.customerOrderEmail = function(businessId = null, orderId = null, callback) {
     // Get order details
-    orderModel.getOrders(businessId, null, orderId, null, function(orderResponse) {
+    orderModel.getOrders(businessId, null, orderId, null, null, null, function(orderResponse) {
         if(!orderResponse.error) {
             // Get order items details
             orderModel.getOrderItems(orderResponse[0].id, function(getOrderItemsResponse){

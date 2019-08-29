@@ -45,7 +45,7 @@ exports.insertOrderItems = function(orderItemsData = null, callback) {
     });
 }
 
-exports.getOrders = function(businessId = null, orderType = null, orderId = null, orderStatus = null, callback) {
+exports.getOrders = function(businessId = null, orderType = null, orderId = null, orderStatus = null, fromDateTime = null, toDateTime = null, callback) {
     let sql = "SELECT orders.*, customers.customerFirstName, customers.customerLastName, customers.customerBusinessName, customers.customerEmail, customers.customerCountryCode, customers.customerPhoneNumber, customers.customerPostalAddress, customers.customerAddress, customers.isBusiness as customerIsBusiness, users.firstName as cashierFirstName, users.lastName as cashierLastName, users.email as cashierEmail, users.phoneCountryCode as cashierCountryCode, users.userPhoneNumber as cashierPhoneNumber FROM ?? LEFT JOIN ?? ON ?? = ?? LEFT JOIN ?? ON ?? = ?? WHERE ?? = ?";// AND ?? = ? AND ?? = ?";
     
     let inserts = ['orders', 'customers', 'orders.customerId', 'customers.id', 'users', 'orders.userId', 'users.id', 'orders.businessId', businessId]//, 'orderType', orderType, 'id', orderId];
@@ -63,6 +63,17 @@ exports.getOrders = function(businessId = null, orderType = null, orderId = null
     if(orderStatus) {
         sql += " AND orders.orderStatus = ?"
         inserts.push(orderStatus)
+    }
+
+    // If there is a date range passed
+    if(fromDateTime) {
+        sql += " AND orders.createdAt >= ?"
+        inserts.push(fromDateTime)
+        
+        if(toDateTime) {
+            sql += " AND orders.createdAt <= ?"
+            inserts.push(toDateTime)
+        }
     }
 
     sql = mysql.format(sql, inserts);

@@ -248,6 +248,8 @@ exports.getOrders = function(req, res) {
     let orderType = req.query.orderType ? req.query.orderType : null
     let orderId = req.query.orderId ? req.query.orderId : null
     let orderStatus = req.query.orderStatus ? req.query.orderStatus : null
+    let from = req.query.from ? req.query.from : null // Format 2019-08-18 05:30:20 Y-m-d H:i:s
+    let to = req.query.to ? req.query.to : null // Format 2019-08-18 05:30:20 Y-m-d H:i:s
 
     // Checking all parameters are available
     let errorArray = []
@@ -265,7 +267,7 @@ exports.getOrders = function(req, res) {
     }
 
     // Get order(s)
-    orderModel.getOrders(businessId, orderType, orderId, orderStatus, function(getOrdersResponse) {
+    orderModel.getOrders(businessId, orderType, orderId, orderStatus, from, to, function(getOrdersResponse) {
         if(!getOrdersResponse.error) {
             // Loop over orders and get individual order items
             let ordersCount = getOrdersResponse.length ? getOrdersResponse.length : 0
