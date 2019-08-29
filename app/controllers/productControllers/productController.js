@@ -59,7 +59,7 @@ exports.new = function(req, res) {
     let published = parseInt(req.body['published']) !== undefined ? parseInt(req.body['published']) : null
     // New fields - Focus
     let storageLocation = req.body['storageLocation'] ? req.body['storageLocation'] : null // aisle No. etc
-    let sellAs = req.body['sellAs'] ? req.body['sellAs'] : null // CUSTOM or FULL
+    let sellAs = trim(req.body['sellAs']) ? trim(req.body['sellAs']) : null // CUSTOM or FULL
     let customSaleUnit = req.body['customSaleUnit'] // Only available if sellAs === CUSTOM
     let measurement = parseFloat(req.body['measurement']) !== undefined ? parseFloat(req.body['measurement']) : null
     let qty = parseInt(req.body['qty']) ? parseInt(req.body['qty']) : 0 // Default - 0
@@ -89,6 +89,8 @@ exports.new = function(req, res) {
     if(sellAs !== 'FULL' || sellAs !== 'CUSTOM') {
         errorArray.push({name: 'sellAs', text: 'Please enter a valid sellAs variable(Should be either CUSTOM or FULL).'})
     }
+
+    console.log('SELL AS VALUE: ', sellAs)
 
     if(errorArray.length > 0 ) {
         // If variables are missing
