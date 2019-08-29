@@ -112,7 +112,7 @@ exports.restockProduct = function(businessId = null, productId = null, restockId
         if(!productResponse.error && productResponse && productResponse.length > 0) {
             // Product update data
             let productUpdateData = {
-                qty: productResponse[0].qty ? productResponse[0].qty : 0 + restockQty,
+                qty: productResponse[0].qty ? productResponse[0].qty + restockQty : 0 + restockQty,
                 updatedAt: moment().format('YYYY-MM-DD HH:mm:ss')
             }
 
