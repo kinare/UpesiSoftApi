@@ -67,6 +67,7 @@ exports.new = function(req, res) {
     let productId = parseInt(req.body['id']) ? parseInt(req.body['id']) : null
     let state = parseInt(req.body['state']) !== undefined ? parseInt(req.body['state']) : null
     let initiateUserId = req.userDetails.id ? req.userDetails.id : null
+    let productColor = req.body['productColor'] ? req.body['productColor'].trim() : null
 
     let errorArray = []
     if(!businessId) {errorArray.push({name: 'businessId', text: 'Missing user token.'})}
