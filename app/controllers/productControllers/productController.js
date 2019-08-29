@@ -90,8 +90,6 @@ exports.new = function(req, res) {
         errorArray.push({name: 'sellAs', text: 'Please enter a valid sellAs variable(Should be either CUSTOM or FULL).'})
     }
 
-    console.log('SELL AS VALUE: ', sellAs)
-
     if(errorArray.length > 0 ) {
         // If variables are missing
         return res.status(400).send({
@@ -130,7 +128,7 @@ exports.new = function(req, res) {
                     // Check if insert or update
                     if(!productId) {
                         // Check if user can create
-                        if(userPermissionsResponse[0].createProduct === 1) {
+                        if(userPermissionsResponse[0].createProducts === 1) {
                             // Insert new product
                             let insertData = {
                                 businessId: businessId,
@@ -218,7 +216,7 @@ exports.new = function(req, res) {
                         }
                     } else {
                         // Check if user can create
-                        if(userPermissionsResponse[0].editProduct === 1) {
+                        if(userPermissionsResponse[0].editProducts === 1) {
                             // Gather updated information
                             let updatedData = {}
 
