@@ -115,7 +115,9 @@ exports.restockProduct = function(businessId = null, productId = null, restockId
                 qty: productResponse[0].qty ? productResponse[0].qty : 0 + restockQty,
                 updatedAt: moment().format('YYYY-MM-DD HH:mm:ss')
             }
-        
+
+            console.log('PRODUCT UPDATE DATA: ', productUpdateData)
+            
             // Update product qty
             productModel.updateProduct(productId, productUpdateData, function(updateProductResponse) {
                 console.log('UPDATE PRODUCT RESPONSE: ', updateProductResponse)
