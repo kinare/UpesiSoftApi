@@ -86,7 +86,7 @@ exports.new = function(req, res) {
         if(!qty && typeof qty == "number") {errorArray.push({name: 'qty', text: 'Missing quantity field or wrong datatype. Please enter a number.'})}
         if(!unitPrice && typeof unitPrice !== 'number') {errorArray.push({name: 'unitPrice', text: 'Missing product unit price.'})}
     }
-    if(sellAs !== 'FULL' || sellAs !== 'CUSTOM') {
+    if(sellAs !== 'FULL' && sellAs !== 'CUSTOM') {
         errorArray.push({name: 'sellAs', text: 'Please enter a valid sellAs variable(Should be either CUSTOM or FULL).'})
     }
 
