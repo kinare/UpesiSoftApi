@@ -61,15 +61,17 @@ exports.restockInitiate = function(req, res) {
                                 } else {
                                     // Restock product
                                     exports.restockProduct(businessId, productId, restockResponse.insertId, restockQty, function(restockResponse) {
-                                        if(!restockResponse.error) {
-                                            res.send({
-                                                status: 'success',
-                                                data: null
-                                            })
-                                        } else {
+                                        if(restockResponse.error) {
                                             res.status(400).send({
                                                 status: 'error',
                                                 message: restockResponse.text ? restockResponse : 'The restock order was successfully inserted but there was an error updating your current stock. Kindly contact support for further assistance.'
+                                            })
+                                        } else {
+                                            res.send({
+                                                status: 'success',
+                                                data: {
+                                                    response: restockResponse
+                                                }
                                             })
                                         }
                                     })
@@ -116,6 +118,7 @@ exports.restockProduct = function(businessId = null, productId = null, restockId
         
             // Update product qty
             productModel.updateProduct(productId, productUpdateData, function(updateProductResponse) {
+                console.log('UPDATE PRODUCT RESPONSE: ', updateProductResponse)
                 if(updateProductResponse.affectedRows > 0) {
                     // Gather updated information
                     let restockUpdatedData = {
@@ -145,12 +148,10 @@ exports.restockProduct = function(businessId = null, productId = null, restockId
                 }
             })
         } else {
-            callback(
-                {
-                    error: true,
-                    text: productResponse.text ? productResponse.text : 'There was an error getting the product for a restock.'
-                }
-            )
+            callback({
+                error: true,
+                text: productResponse.text ? productResponse.text : 'There was an error getting the product for a restock.'
+            })
         }
     })
 }
