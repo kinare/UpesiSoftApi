@@ -125,3 +125,24 @@ exports.getOrderItems = function(orderId = null, callback) {
         }
     });
 }
+
+exports.updateOrder = function(updateVariable = null, updateData = null, callback) {
+    // If codes match, update entry
+    let sql = "UPDATE ?? SET ? WHERE ?? = ?";
+
+    let inserts = ['orders', updateData, updateVariable['name'], updateVariable['value']];
+    sql = mysql.format(sql, inserts);
+
+    pool.query(sql, function (error, results, fields) {
+        if (error) {
+            // throw error
+            callback({
+                error: 'true', 
+                text: error.sqlMessage ? error.sqlMessage : 'There was an error updating customer details.',
+                sqlMessage: error.sqlMessage ? error.sqlMessage : null
+            })
+        } else {
+            callback(results)
+        }
+    });
+}

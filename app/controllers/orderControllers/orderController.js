@@ -1,6 +1,7 @@
 const orderModel = require('../../models/orderModels/orderModel')
 const moment = require('moment')
 const productModel = require('../../models/productModels/productModel')
+const orderEmailController = require('../orderControllers/orderEmailController')
 
 exports.new = function(req, res) {
     // Get params
@@ -298,5 +299,106 @@ exports.getOrders = function(req, res) {
                 sqlMessage: getOrdersResponse.sqlMessage ? getOrdersResponse.sqlMessage : null
             })
         }
+    })
+}
+
+exports.convertOrder = function(req, res) {
+    // Get details
+    let businessId = req.userDetails.businessId
+    let orderId = req.body['orderId'] ? parseInt(req.body['orderId']) : null
+    let userId = req.userDetails.id
+    let withEmail = req.body['withEmail'] ? req.body['withEmail'] : null
+
+    // Checking all parameters are available
+    let errorArray = []
+    if(!businessId) {errorArray.push({name: 'businessId', text: 'Missing user token.'})}
+    if(!orderId) {errorArray.push({name: 'orderId', text: 'Missing Order Id.'})}
+    if(!userId) {errorArray.push({name: 'userId', text: 'Missing User Id.'})}
+
+    if(errorArray.length > 0 ) {
+        // If variables are missing
+        return res.status(400).send({
+            status: 'error',
+            message: 'Missing parameters. Please check the missing data list.',
+            data: {
+                list: errorArray
+            }
+        })
+    }
+
+    // Get order details
+    orderModel.getOrders(businessId, null, orderId, null, null, null, function(orderResponse) {
+        if(!orderResponse.error && orderResponse.length > 0) {
+            // Check for the type of conversion
+            // Initiate conversion
+            let updatedDetails = {
+                updatedAt: moment().format('YYYY-MM-DD HH:mm:ss')
+            }
+
+            let updateVariable = {
+                name: 'id',
+                value: orderId
+            }
+
+            if(orderResponse[0].orderType === 'QUOTE') {
+                // Update to Invoice
+                updatedDetails.orderType = 'INVOICE';
+
+            } else if(orderResponse[0].orderType === 'INVOICE') {
+                // Update to Invoice
+                updatedDetails.orderType = 'ORDER';
+
+            } else {
+                return res.status(400).send({
+                    status: 'error',
+                    message: 'The order could not be updated. Order type: ' . orderResponse[0].orderType
+                })
+            }
+
+            // Run update
+            orderModel.updateOrder(updateVariable, updatedDetails, function(updateOrderResponse) {
+                if(updateOrderResponse.affectedRows > 0) {
+                    // Check whether to send email after update
+                    if(withEmail === 'yes') {
+                        // Send email
+                        orderEmailController.customerOrderEmail(businessId, orderId, function(sendCustomerEmailResponse) {
+                            if(!sendCustomerEmailResponse.error) {
+                                res.send({
+                                    status: 'success',
+                                    data: {
+                                        emailResponse: sendCustomerEmailResponse,
+                                        updateDetails: updateOrderResponse
+                                    }
+                                })
+                            } else {
+                                res.status(400).send({
+                                    status: 'error',
+                                    message: sendCustomerEmailResponse.text ? sendCustomerEmailResponse.text : 'There was an error sending the customer email. Order details were however updated.'
+                                })
+                            }
+                        })
+                    } else {
+                        res.send({
+                            status: 'success',
+                            data: {
+                                updateDetails: updateOrderResponse
+                            }
+                        })
+                    }
+                } else {
+                    res.status(400).send({
+                        status: 'error',
+                        message: updateOrderResponse.sqlMessage ? updateOrderResponse.sqlMessage : updateOrderResponse.text ? updateOrderResponse.text : 'There was an error updating the order. Please try again. If the issue persists, kindly contact support.'
+                    })
+                }
+            })
+
+        } else {
+            res.status(400).send({
+                status: 'error',
+                message: orderResponse.sqlMessage ? orderResponse.sqlMessage : orderResponse.text ? orderResponse.text : 'There was an error retrieving the order.'
+            })
+        }
+
     })
 }

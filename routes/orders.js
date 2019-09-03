@@ -11,6 +11,6 @@ router.post('/v1/orders/new', userController.verifyUserToken, orderController.ne
 router.post('/v1/orders/customer/email', userController.verifyUserToken, orderEmailController.sendCustomerOrderEmail)
 
 // Convert orders from quote to invoice & from invoice to complete order.
-// router.post('/v1/order/state/update', userController.verifyUserToken, productStockController.restockInitiate)
+router.post('/v1/order/state/update', userController.verifyUserToken, orderController.convertOrder)
 
 module.exports = router;
