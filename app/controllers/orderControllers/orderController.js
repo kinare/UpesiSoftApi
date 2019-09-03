@@ -346,7 +346,9 @@ exports.convertOrder = function(req, res) {
 
             } else if(orderResponse[0].orderType === 'INVOICE') {
                 // Update to Invoice
-                updatedDetails.orderType = 'ORDER';
+                updatedDetails.orderType = 'ORDER'
+                updatedDetails.paymentMethod = 'CASH'
+                updatedDetails.orderStatus = 'PAID'
 
             } else {
                 return res.status(400).send({
