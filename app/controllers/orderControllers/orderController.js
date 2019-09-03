@@ -351,7 +351,7 @@ exports.convertOrder = function(req, res) {
             } else {
                 return res.status(400).send({
                     status: 'error',
-                    message: 'The order could not be updated. Order type: ' . orderResponse[0].orderType
+                    message: 'The order could not be updated because of the order type. This only works for quotes and invoices.'
                 })
             }
 
