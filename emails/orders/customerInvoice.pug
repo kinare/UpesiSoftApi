@@ -88,16 +88,16 @@ head
             td.title
               img(src='https://www.focus.upesisoft.com/img/Focus%20Logo.png' style='width:100%; max-width:300px;')
             td
-              | Invoice #: 123
+              | Invoice # #{orderDetails.id}
               br
-              |                                 Date: January 1, 2015
+              |                                 Date: #{orderDetails.createdAt}
               br
     tr.information
       td(colspan='4')
         table
           tr
             td
-              | Focus Glass &amp; Alluminium.
+              | Focus Glass &amp; Aluminium.
               br
               |                                 Irene Njeri
               br
@@ -105,13 +105,13 @@ head
             td
               strong To
               br
-              |                                 Nicholas Kimuli.
+              |                                 #{customerDetails.customerFirstName ? customerDetails.customerFirstName + ' ' + customerDetails.customerLastName : ''}
               br
-              |                                 +254703826457
+              |                                 #{customerDetails.customerPhoneNumber ? customerDetails.customerCountryCode + customerDetails.customerPhoneNumber : ''}
               br
-              |                                 nicholaskimuli@gmail.com
+              |                                 #{customerDetails.customerEmail ? customerDetails.customerEmail : ''}
               br
-              |                                 Saachi Plaza, Along Argwings Kodhek Road
+              |                                 #{customerDetails.kraPin ? customerDetails.kraPin : ''}
     tr.heading
       td
         | Item
@@ -121,27 +121,19 @@ head
         | Unit
       td
         | Price
-    tr.item
-      td
-        | Flash Lock Siver
-      td
-        | 3
-      td
-        | 1M
-      td
-        | KES 200.00
-    tr.item.last
-      td
-        | Flash Lock Siver
-      td
-        | 3
-      td
-        | 1M
-      td
-        | KES 200.00
+    each orderItem in orderItems
+      tr.item
+        td
+          | #{orderItem.productName ? orderItem.productName : ''}
+        td
+          | #{orderItem.qty ? orderItem.qty : '1'}
+        td
+          | #{orderItem.soldMeasurement ? orderItem.soldMeasurement + orderItem.measurementAbbreviation : ''}
+        td
+          | KES #{orderItem.price ? orderItem.price : 'N/A'}
     tr.total
       td
       td
       td
       td
-        | Total: KES 385.00
+        | Total: #{'KES ' + orderDetails.total ? orderDetails.total : 'N/A'}

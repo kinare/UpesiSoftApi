@@ -57,7 +57,10 @@ exports.customerOrderEmail = function(businessId = null, orderId = null, callbac
                             // Send invoice as html
                             email
                                 .render('orders/customerInvoice', {
-                                    subject: process.env.BUSINESS_NAME + ' - Successful Order'
+                                    subject: process.env.BUSINESS_NAME + ' - Successful Order',
+                                    orderDetails: orderResponse[0],
+                                    orderItems: getOrderItemsResponse,
+                                    customerDetails: customerResponse[0]
                                 })
                                 .then(res => {
                                     let mailOptions = {
@@ -81,6 +84,7 @@ exports.customerOrderEmail = function(businessId = null, orderId = null, callbac
                                     })
                                 })
                                 .catch(err => {
+                                    console.log(err)
                                     callback({
                                         error: true,
                                         text: 'There was an error getting the email template.',
