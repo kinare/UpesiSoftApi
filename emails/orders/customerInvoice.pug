@@ -124,11 +124,11 @@ head
     each orderItem in orderItems
       tr.item
         td
-          | #{orderItem.productName ? orderItem.productName : ''}
+          | #{orderItem.productName ? orderItem.productName : 'N/A'}
         td
           | #{orderItem.qty ? orderItem.qty : '1'}
         td
-          | #{orderItem.soldMeasurement ? orderItem.soldMeasurement + orderItem.measurementAbbreviation : ''}
+          | #{orderItem.soldMeasurement ? orderItem.soldMeasurement + orderItem.measurementAbbreviation : orderItem.measurementAbbreviation ? orderItem.measurementAbbreviation : 'N/A'}
         td
           | KES #{orderItem.price ? orderItem.price : 'N/A'}
     tr.total
