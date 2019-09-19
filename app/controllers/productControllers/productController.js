@@ -91,8 +91,6 @@ exports.new = function(req, res) {
         errorArray.push({name: 'sellAs', text: 'Please enter a valid sellAs variable(Should be either CUSTOM or FULL).'})
     }
 
-    console.log('SKU type: ', typeof sku)
-
     if(errorArray.length > 0 ) {
         // If variables are missing
         return res.status(400).send({

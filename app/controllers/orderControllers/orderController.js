@@ -78,133 +78,139 @@ exports.new = function(req, res) {
                         insertOrderItemDetails = [response.insertId,item.productId,item.subProductId,item.sellAs,null,parseFloat(item.soldMeasurement),parseFloat(item.measurementBefore),parseFloat(item.measurementAfter),parseFloat(item.price),1,moment().format('YYYY-MM-DD HH:mm:ss'),moment().format('YYYY-MM-DD HH:mm:ss')]
 
                         // Update product details i.e. update measurements & qty etc
-                        // Update sub product details
-                        // Get product details
-                        productModel.getSubProduct(item.subProductId, function(subProductResponse) {
-                            // If there is a product
-                            if(!subProductResponse.error && subProductResponse) {
-                                // Update product details i.e. update measurements & qty etc
-                                // Check if measurement is equal or more than what is available
-                                if(parseFloat(subProductResponse[0].measurement) >= parseFloat(item.soldMeasurement)) {
-                                    let subProductUpdateDetails = {
-                                        measurement: parseFloat(item.measurementBefore) - parseFloat(item.soldMeasurement)
-                                    }
-                
-                                    // Update product
-                                    productModel.updateSubProduct(item.subProductId, subProductUpdateDetails, function(updateSubProductResponse) {
-                                        if(updateSubProductResponse.affectedRows > 0) {
-                                            console.log('Sub product updated.')
-                                        } else {
-                                            console.log('Sub product not updated.')
+                        // Update sub product details if orderType = ORDER
+                        if(orderType === "ORDER") { 
+                            // Get product details
+                            productModel.getSubProduct(item.subProductId, function(subProductResponse) {
+                                // If there is a product
+                                if(!subProductResponse.error && subProductResponse) {
+                                    // Update product details i.e. update measurements & qty etc
+                                    // Check if measurement is equal or more than what is available
+                                    if(parseFloat(subProductResponse[0].measurement) >= parseFloat(item.soldMeasurement)) {
+                                        let subProductUpdateDetails = {
+                                            measurement: parseFloat(item.measurementBefore) - parseFloat(item.soldMeasurement)
                                         }
-                                    })
+                    
+                                        // Update product
+                                        productModel.updateSubProduct(item.subProductId, subProductUpdateDetails, function(updateSubProductResponse) {
+                                            if(updateSubProductResponse.affectedRows > 0) {
+                                                console.log('Sub product updated.')
+                                            } else {
+                                                console.log('Sub product not updated.')
+                                            }
+                                        })
+                                    } else {
+                                        console.log('The measurement sold is greater than the measurement available.')
+                                    }
                                 } else {
-                                    console.log('The measurement sold is greater than the measurement available.')
+                                    console.log('There was no sub-product found with that ID.')
                                 }
-                            } else {
-                                console.log('There was no sub-product found with that ID.')
-                            }
-                        })
+                            })
+                        }
                     } else {
                         // If custom product being sold as full
                         insertOrderItemDetails = [response.insertId,item.productId,null,item.sellAs,item.qty,parseFloat(item.soldMeasurement),parseFloat(item.measurementBefore),parseFloat(item.measurementAfter),parseFloat(item.price),1,moment().format('YYYY-MM-DD HH:mm:ss'),moment().format('YYYY-MM-DD HH:mm:ss')]
     
-                        // Get product details
-                        productModel.getProduct(null, item.productId, function(productResponse) {
-                            // Check if full or custom
-                            if(parseFloat(item.measurementAfter) === parseFloat(productResponse[0].measurement)) {
-                                console.log('Product being sold as full.')
-                                // If product has been sold as full
-                                // If there is a product
-                                if(!productResponse.error && productResponse) {
-                                    // Update product details i.e. update measurements & qty etc
-                                    // Check if qty exists
-                                    if(productResponse[0].qty >= item.qty) {
-                                        let productUpdateDetails = {
-                                            qty: productResponse[0].qty - item.qty
-                                        }
-                    
-                                        // Update product
-                                        productModel.updateProduct(item.productId, productUpdateDetails, function(updateProductResponse) {
-                                            if(updateProductResponse.affectedRows > 0) {
-                                                console.log('Product updated.')
-                                            } else {
-                                                console.log('Product not updated.')
+                        if(orderType === "ORDER") { 
+                            // Get product details
+                            productModel.getProduct(null, item.productId, function(productResponse) {
+                                // Check if full or custom
+                                if(parseFloat(item.measurementAfter) === parseFloat(productResponse[0].measurement)) {
+                                    console.log('Product being sold as full.')
+                                    // If product has been sold as full
+                                    // If there is a product
+                                    if(!productResponse.error && productResponse) {
+                                        // Update product details i.e. update measurements & qty etc
+                                        // Check if qty exists
+                                        if(productResponse[0].qty >= item.qty) {
+                                            let productUpdateDetails = {
+                                                qty: productResponse[0].qty - item.qty
                                             }
-                                        })
+                        
+                                            // Update product
+                                            productModel.updateProduct(item.productId, productUpdateDetails, function(updateProductResponse) {
+                                                if(updateProductResponse.affectedRows > 0) {
+                                                    console.log('Product updated.')
+                                                } else {
+                                                    console.log('Product not updated.')
+                                                }
+                                            })
+                                        } else {
+                                            console.log('Product available qty is less than what is being sold.')
+                                        }
                                     } else {
-                                        console.log('Product available qty is less than what is being sold.')
+                                        console.log('There was no product found with that ID.')
                                     }
                                 } else {
-                                    console.log('There was no product found with that ID.')
-                                }
-                            } else {
-                                console.log('Product being sold as CUSTOM. New sub products being created.')
-                                // If sale creates subProducts
-                                // Add new sub Products with remaining measurement
-                                // Get new sub products
-                                for(let xyz = 0; xyz < item.qty; xyz++) {
-                                    // Add new subProduct
-                                    let newSubProduct = [[item.productId,item.measurementAfter,item.measurementUnitId,1,moment().format('YYYY-MM-DD HH:mm:ss'),moment().format('YYYY-MM-DD HH:mm:ss')]]
+                                    console.log('Product being sold as CUSTOM. New sub products being created.')
+                                    // If sale creates subProducts
+                                    // Add new sub Products with remaining measurement
+                                    // Get new sub products
+                                    for(let xyz = 0; xyz < item.qty; xyz++) {
+                                        // Add new subProduct
+                                        let newSubProduct = [[item.productId,item.measurementAfter,item.measurementUnitId,1,moment().format('YYYY-MM-DD HH:mm:ss'),moment().format('YYYY-MM-DD HH:mm:ss')]]
 
-                                    productModel.addSubProductList(newSubProduct, function(subProductInsertResponse) {
-                                        if(subProductInsertResponse.insertId) {
-                                            console.log('Sub product successfully inserted.')
+                                        productModel.addSubProductList(newSubProduct, function(subProductInsertResponse) {
+                                            if(subProductInsertResponse.insertId) {
+                                                console.log('Sub product successfully inserted.')
 
+                                            } else {
+                                                // No sub-products inserted
+                                                console.log(subProductInsertResponse.sqlMessage ? subProductInsertResponse.sqlMessage : 'There was an error creating a sub Product for order ' + response.insertId)
+                                            }
+                                        })
+                                    }
+
+                                    // Update main product - subtract qty
+                                    let productUpdateDetails = {
+                                        qty: productResponse[0].qty - item.qty
+                                    }
+                
+                                    // Update product
+                                    productModel.updateProduct(item.productId, productUpdateDetails, function(updateProductResponse) {
+                                        if(updateProductResponse.affectedRows > 0) {
+                                            console.log('Product updated.')
                                         } else {
-                                            // No sub-products inserted
-                                            console.log(subProductInsertResponse.sqlMessage ? subProductInsertResponse.sqlMessage : 'There was an error creating a sub Product for order ' + response.insertId)
+                                            console.log('Product not updated.')
                                         }
                                     })
                                 }
-
-                                // Update main product - subtract qty
-                                let productUpdateDetails = {
-                                    qty: productResponse[0].qty - item.qty
-                                }
-            
-                                // Update product
-                                productModel.updateProduct(item.productId, productUpdateDetails, function(updateProductResponse) {
-                                    if(updateProductResponse.affectedRows > 0) {
-                                        console.log('Product updated.')
-                                    } else {
-                                        console.log('Product not updated.')
-                                    }
-                                })
-                            }
-                        })
+                            })
+                        }
                     }                
 
                 } else if(item.sellAs === "FULL") {
                     // If full, check: qty, productId
                     insertOrderItemDetails = [response.insertId,item.productId,null,item.sellAs,item.qty,null,null,null,parseFloat(item.price),1,moment().format('YYYY-MM-DD HH:mm:ss'),moment().format('YYYY-MM-DD HH:mm:ss')]
-
-                    // Get product details
-                    productModel.getProduct(null, item.productId, function(productResponse) {
-                        // If there is a product
-                        if(!productResponse.error && productResponse) {
-                            // Update product details i.e. update measurements & qty etc
-                            // Check if qty exists
-                            if(productResponse[0].qty >= item.qty) {
-                                let productUpdateDetails = {
-                                    qty: productResponse[0].qty - item.qty
-                                }
-            
-                                // Update product
-                                productModel.updateProduct(item.productId, productUpdateDetails, function(updateProductResponse) {
-                                    if(updateProductResponse.affectedRows > 0) {
-                                        console.log('Product updated.')
-                                    } else {
-                                        console.log('Product not updated.')
+    
+                    if(orderType === "ORDER") { 
+                        // Get product details
+                        productModel.getProduct(null, item.productId, function(productResponse) {
+                            // If there is a product
+                            if(!productResponse.error && productResponse) {
+                                // Update product details i.e. update measurements & qty etc
+                                // Check if qty exists
+                                if(productResponse[0].qty >= item.qty) {
+                                    let productUpdateDetails = {
+                                        qty: productResponse[0].qty - item.qty
                                     }
-                                })
+                
+                                    // Update product
+                                    productModel.updateProduct(item.productId, productUpdateDetails, function(updateProductResponse) {
+                                        if(updateProductResponse.affectedRows > 0) {
+                                            console.log('Product updated.')
+                                        } else {
+                                            console.log('Product not updated.')
+                                        }
+                                    })
+                                } else {
+                                    console.log('Product available qty is less than what is being sold.')
+                                }
                             } else {
-                                console.log('Product available qty is less than what is being sold.')
+                                console.log('There was no product found with that ID.')
                             }
-                        } else {
-                            console.log('There was no product found with that ID.')
-                        }
-                    })
+                        })
+                    }
                 } else {
                     console.log('Item sellAs value not recognized.')
                 }
@@ -329,70 +335,80 @@ exports.convertOrder = function(req, res) {
     // Get order details
     orderModel.getOrders(businessId, null, orderId, null, null, null, function(orderResponse) {
         if(!orderResponse.error && orderResponse.length > 0) {
-            // Check for the type of conversion
-            // Initiate conversion
-            let updatedDetails = {
-                updatedAt: moment().format('YYYY-MM-DD HH:mm:ss')
-            }
-
-            let updateVariable = {
-                name: 'id',
-                value: orderId
-            }
-
-            if(orderResponse[0].orderType === 'QUOTE') {
-                // Update to Invoice
-                updatedDetails.orderType = 'INVOICE';
-
-            } else if(orderResponse[0].orderType === 'INVOICE') {
-                // Update to Invoice
-                updatedDetails.orderType = 'ORDER'
-                updatedDetails.paymentMethod = 'CASH'
-                updatedDetails.orderStatus = 'PAID'
-
-            } else {
-                return res.status(400).send({
-                    status: 'error',
-                    message: 'The order could not be updated because of the order type. This only works for quotes and invoices.'
-                })
-            }
-
-            // Run update
-            orderModel.updateOrder(updateVariable, updatedDetails, function(updateOrderResponse) {
-                if(updateOrderResponse.affectedRows > 0) {
-                    // Check whether to send email after update
-                    if(withEmail === 'yes') {
-                        // Send email
-                        orderEmailController.customerOrderEmail(businessId, orderId, function(sendCustomerEmailResponse) {
-                            if(!sendCustomerEmailResponse.error) {
-                                res.send({
-                                    status: 'success',
-                                    data: {
-                                        emailResponse: sendCustomerEmailResponse,
-                                        updateDetails: updateOrderResponse
-                                    }
-                                })
-                            } else {
-                                res.status(400).send({
-                                    status: 'error',
-                                    message: sendCustomerEmailResponse.text ? sendCustomerEmailResponse.text : 'There was an error sending the customer email. Order details were however updated.'
-                                })
-                            }
-                        })
-                    } else {
-                        res.send({
-                            status: 'success',
-                            data: {
-                                updateDetails: updateOrderResponse
-                            }
-                        })
-                    }
+            console.log(orderResponse)
+            exports.updateOrderStock(orderResponse[0]).then((response) => {
+                // Check for the type of conversion
+                // Initiate conversion
+                let updatedDetails = {
+                    updatedAt: moment().format('YYYY-MM-DD HH:mm:ss')
+                }
+    
+                let updateVariable = {
+                    name: 'id',
+                    value: orderId
+                }
+    
+                if(orderResponse[0].orderType === 'QUOTE') {
+                    // Update to Invoice
+                    updatedDetails.orderType = 'INVOICE';
+    
+                } else if(orderResponse[0].orderType === 'INVOICE') {
+                    // Update to Invoice
+                    updatedDetails.orderType = 'ORDER'
+                    updatedDetails.paymentMethod = 'CASH'
+                    updatedDetails.orderStatus = 'PAID'
+    
                 } else {
-                    res.status(400).send({
+                    return res.status(400).send({
                         status: 'error',
-                        message: updateOrderResponse.sqlMessage ? updateOrderResponse.sqlMessage : updateOrderResponse.text ? updateOrderResponse.text : 'There was an error updating the order. Please try again. If the issue persists, kindly contact support.'
+                        message: 'The order could not be updated because of the order type. This only works for quotes and invoices.'
                     })
                 }
+    
+                // Run update
+                orderModel.updateOrder(updateVariable, updatedDetails, function(updateOrderResponse) {
+                    if(updateOrderResponse.affectedRows > 0) {
+                        // Check whether to send email after update
+                        if(withEmail === 'yes') {
+                            // Send email
+                            orderEmailController.customerOrderEmail(businessId, orderId, null, function(sendCustomerEmailResponse) {
+                                if(!sendCustomerEmailResponse.error) {
+                                    res.send({
+                                        status: 'success',
+                                        data: {
+                                            emailResponse: sendCustomerEmailResponse,
+                                            updateDetails: updateOrderResponse
+                                        }
+                                    })
+                                } else {
+                                    res.status(400).send({
+                                        status: 'error',
+                                        message: sendCustomerEmailResponse.text ? sendCustomerEmailResponse.text : 'There was an error sending the customer email. Order details were however updated.'
+                                    })
+                                }
+                            })
+                        } else {
+                            res.send({
+                                status: 'success',
+                                data: {
+                                    updateDetails: updateOrderResponse
+                                }
+                            })
+                        }
+                    } else {
+                        res.status(400).send({
+                            status: 'error',
+                            message: updateOrderResponse.sqlMessage ? updateOrderResponse.sqlMessage : updateOrderResponse.text ? updateOrderResponse.text : 'There was an error updating the order. Please try again. If the issue persists, kindly contact support.'
+                        })
+                    }
+                })
+                
+            }).catch((error) => {
+                console.log(error)
+                res.status(400).send({
+                    status: 'error',
+                    message: error.sqlMessage ? error.sqlMessage : error.text ? error.text : 'There was an error updating the order.'
+                })
             })
 
         } else {
@@ -401,6 +417,196 @@ exports.convertOrder = function(req, res) {
                 message: orderResponse.sqlMessage ? orderResponse.sqlMessage : orderResponse.text ? orderResponse.text : 'There was an error retrieving the order.'
             })
         }
+    })
+}
 
+/**
+ * Update order items - for invoices & order 
+ */
+exports.updateOrderStock = function(orderDetails = null) {
+    return new Promise((resolve, reject) => {
+        // Process information the resolve or reject
+        // Get order items
+        if(orderDetails.orderType === 'INVOICE') {
+            // Check sell as type
+            orderModel.getOrderItems(orderDetails.id, function(orderItemsResponse) {
+                if(!orderItemsResponse.error && orderItemsResponse.length > 0) {
+                    orderItemsResponse.forEach(item => {
+                        // Looping over items
+                        if(item.sellAs === 'CUSTOM') {
+                            if(item.subProductId) {
+                                // Sell as sub-product
+                                // Get sub-product details
+                                productModel.getSubProduct(item.subProductId, function(subProductResponse) {
+                                    // If there is a product
+                                    if(!subProductResponse.error && subProductResponse) {
+                                        // Update product details i.e. update measurements & qty etc
+                                        // Check if measurement is equal or more than what is available
+                                        if(parseFloat(subProductResponse[0].measurement) >= parseFloat(item.soldMeasurement)) {
+                                            let subProductUpdateDetails = {
+                                                measurement: parseFloat(item.measurementBefore) - parseFloat(item.soldMeasurement)
+                                            }
+                        
+                                            // Update product
+                                            productModel.updateSubProduct(item.subProductId, subProductUpdateDetails, function(updateSubProductResponse) {
+                                                if(updateSubProductResponse.affectedRows > 0) {
+                                                    console.log('Sub-product updated.')
+                                                    resolve(true)
+                                                } else {
+                                                    console.log('Sub-product not updated.')
+                                                    reject({
+                                                        error: true,
+                                                        text: updateSubProductResponse.text ? updateSubProductResponse.text : 'Sub-product not updated',
+                                                        sqlMessage: updateSubProductResponse.sqlMessage ? updateSubProductResponse.sqlMessage : ''
+                                                    })
+                                                }
+                                            })
+                                        } else {
+                                            console.log('The measurement sold is greater than the measurement available.')
+                                            reject({
+                                                error: true,
+                                                text: 'The measurement sold is greater than the measurement available for order item - .' + item.id
+                                            })
+                                        }
+                                    } else {
+                                        console.log('There was no sub-product found with that ID.')
+                                        reject({
+                                            error: true,
+                                            text: subProductResponse.text ? subProductResponse.text : 'There was no sub-product found with that ID.',
+                                            sqlMessage: subProductResponse.sqlMessage ? subProductResponse.sqlMessage : ''
+                                        })
+                                    }
+                                })
+                            } else {
+                                // Sell as full product
+                                // Get product details
+                                productModel.getProduct(null, item.productId, function(productResponse) {
+                                    // Check if full or custom
+                                    if(parseFloat(item.measurementAfter) === parseFloat(productResponse[0].measurement)) {
+                                        console.log('Product being sold as full.')
+                                        // If product has been sold as full
+                                        // If there is a product
+                                        if(!productResponse.error && productResponse) {
+                                            // Update product details i.e. update measurements & qty etc
+                                            // Check if qty exists
+                                            if(productResponse[0].qty >= item.qty) {
+                                                let productUpdateDetails = {
+                                                    qty: productResponse[0].qty - item.qty
+                                                }
+                            
+                                                // Update product
+                                                productModel.updateProduct(item.productId, productUpdateDetails, function(updateProductResponse) {
+                                                    if(updateProductResponse.affectedRows > 0) {
+                                                        console.log('Product updated.')
+                                                    } else {
+                                                        console.log('Product not updated.')
+                                                    }
+                                                })
+                                            } else {
+                                                console.log('Product available qty is less than what is being sold.')
+                                            }
+                                        } else {
+                                            console.log('There was no product found with that ID.')
+                                        }
+                                    } else {
+                                        console.log('Product being sold as CUSTOM. New sub products being created.')
+                                        // If sale creates subProducts
+                                        // Add new sub Products with remaining measurement
+                                        // Get new sub products
+                                        for(let xyz = 0; xyz < item.qty; xyz++) {
+                                            // Add new subProduct
+                                            let newSubProduct = [[item.productId,item.measurementAfter,item.measurementUnitId,1,moment().format('YYYY-MM-DD HH:mm:ss'),moment().format('YYYY-MM-DD HH:mm:ss')]]
+    
+                                            productModel.addSubProductList(newSubProduct, function(subProductInsertResponse) {
+                                                if(subProductInsertResponse.insertId) {
+                                                    console.log('Sub product successfully inserted.')
+    
+                                                } else {
+                                                    // No sub-products inserted
+                                                    console.log(subProductInsertResponse.sqlMessage ? subProductInsertResponse.sqlMessage : 'There was an error creating a sub Product for order ' + response.insertId)
+                                                }
+                                            })
+                                        }
+    
+                                        // Update main product - subtract qty
+                                        let productUpdateDetails = {
+                                            qty: productResponse[0].qty - item.qty
+                                        }
+                    
+                                        // Update product
+                                        productModel.updateProduct(item.productId, productUpdateDetails, function(updateProductResponse) {
+                                            if(updateProductResponse.affectedRows > 0) {
+                                                console.log('Product updated.')
+                                            } else {
+                                                console.log('Product not updated.')
+                                            }
+                                        })
+                                    }
+                                })
+                            }
+            
+                        } else if(item.sellAs === 'FULL') {
+                            // Get order items && update each
+                            // Get product details
+                            productModel.getProduct(null, item.productId, function(productResponse) {
+                                // If there is a product
+                                if(!productResponse.error && productResponse) {
+                                    // Update product details i.e. update measurements & qty etc
+                                    // Check if qty exists
+                                    if(productResponse[0].qty >= item.qty) {
+                                        let productUpdateDetails = {
+                                            qty: productResponse[0].qty - item.qty
+                                        }
+                    
+                                        // Update product
+                                        productModel.updateProduct(item.productId, productUpdateDetails, function(updateProductResponse) {
+                                            if(updateProductResponse.affectedRows > 0) {
+                                                console.log('Product updated.')
+                                                resolve(true)
+                                            } else {
+                                                console.log('Product not updated.')
+                                                reject({
+                                                    error: true,
+                                                    text: updateProductResponse.text ? updateProductResponse.text : 'There was an error fetching order items.',
+                                                    sqlMessage: updateProductResponse.sqlMessage ? updateProductResponse.sqlMessage : ''
+                                                })
+                                            }
+                                        })
+                                    } else {
+                                        console.log('Product available qty is less than what is being sold.')
+                                        reject({
+                                            error: true,
+                                            text: 'Product available qty is less than what is being sold for order item - ' + item.id
+                                        })
+                                    }
+                                } else {
+                                    console.log('There was no product found with that ID.')
+                                    reject({
+                                        error: true,
+                                        text: productResponse.text ? productResponse.text : 'There was no product found with that ID.',
+                                        sqlMessage: productResponse.sqlMessage ? productResponse.sqlMessage : ''
+                                    })
+                                }
+                            })
+            
+                        } else {
+                            console.log('Unknow order type or missing order type.')
+                            reject({
+                                error: true,
+                                text: 'Unknow order type or missing order type.'
+                            })
+                        }                     
+                    });
+                } else {
+                    reject({
+                        error: true,
+                        text: orderItemsResponse.text ? orderItemsResponse.text : 'There was an error fetching order items.',
+                        sqlMessage: orderItemsResponse.sqlMessage ? orderItemsResponse.sqlMessage : ''
+                    })
+                }
+            })
+        } else {
+            resolve(true)
+        }
     })
 }
