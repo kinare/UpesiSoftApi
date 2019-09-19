@@ -9,6 +9,9 @@ exports.sendCustomerOrderEmail = function(req, res) {
     // Get params
     let businessId = req.userDetails.businessId
     let orderId = req.body['orderId']
+    let customerEmail = req.body['customerEmail']
+
+    console.log('Email: ', customerEmail)
 
     // Checking all parameters are available
     let errorArray = []
@@ -27,7 +30,7 @@ exports.sendCustomerOrderEmail = function(req, res) {
     }
 
     // Send customer order email
-    exports.customerOrderEmail(businessId, orderId, function(sendCustomerEmailResponse) {
+    exports.customerOrderEmail(businessId, orderId, customerEmail, function(sendCustomerEmailResponse) {
         if(!sendCustomerEmailResponse.error) {
             res.send({
                 status: 'success',
@@ -43,7 +46,7 @@ exports.sendCustomerOrderEmail = function(req, res) {
 }
 
 // Send receipt to customer
-exports.customerOrderEmail = function(businessId = null, orderId = null, callback) {
+exports.customerOrderEmail = function(businessId = null, orderId = null, customerEmail = null, callback) {
     // Get order details
     orderModel.getOrders(businessId, null, orderId, null, null, null, function(orderResponse) {
         if(!orderResponse.error) {
@@ -63,9 +66,10 @@ exports.customerOrderEmail = function(businessId = null, orderId = null, callbac
                                     customerDetails: customerResponse[0]
                                 })
                                 .then(res => {
+                                    console.log('Customer Email 2: ' + customerEmail)
                                     let mailOptions = {
                                         from: process.env.BUSINESS_NAME + ' <no-reply@upesisoft.com>',
-                                        to: customerResponse[0].customerEmail,
+                                        to: customerEmail ? customerEmail : customerResponse[0].customerEmail,
                                         subject: process.env.BUSINESS_NAME + ' - Successful Order',
                                         html: res
                                     }

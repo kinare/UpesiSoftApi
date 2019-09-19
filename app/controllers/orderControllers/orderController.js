@@ -75,7 +75,7 @@ exports.new = function(req, res) {
                     if(item.primaryProductId) {
                         // Sell as sub product
                         // Required data: subProductId, productId, soldMeasurement
-                        insertOrderItemDetails = [response.insertId,item.productId,item.subProductId,item.sellAs,null,item.soldMeasurement,item.measurementBefore,item.measurementAfter,parseFloat(item.price),1,moment().format('YYYY-MM-DD HH:mm:ss'),moment().format('YYYY-MM-DD HH:mm:ss')]
+                        insertOrderItemDetails = [response.insertId,item.productId,item.subProductId,item.sellAs,null,parseFloat(item.soldMeasurement),parseFloat(item.measurementBefore),parseFloat(item.measurementAfter),parseFloat(item.price),1,moment().format('YYYY-MM-DD HH:mm:ss'),moment().format('YYYY-MM-DD HH:mm:ss')]
 
                         // Update product details i.e. update measurements & qty etc
                         // Update sub product details
@@ -85,9 +85,9 @@ exports.new = function(req, res) {
                             if(!subProductResponse.error && subProductResponse) {
                                 // Update product details i.e. update measurements & qty etc
                                 // Check if measurement is equal or more than what is available
-                                if(subProductResponse[0].measurement >= item.soldMeasurement) {
+                                if(parseFloat(subProductResponse[0].measurement) >= parseFloat(item.soldMeasurement)) {
                                     let subProductUpdateDetails = {
-                                        measurement: item.measurementAfter
+                                        measurement: parseFloat(item.measurementBefore) - parseFloat(item.soldMeasurement)
                                     }
                 
                                     // Update product
@@ -107,12 +107,12 @@ exports.new = function(req, res) {
                         })
                     } else {
                         // If custom product being sold as full
-                        insertOrderItemDetails = [response.insertId,item.productId,null,item.sellAs,item.qty,item.soldMeasurement,item.measurementBefore,item.measurementAfter,parseFloat(item.price),1,moment().format('YYYY-MM-DD HH:mm:ss'),moment().format('YYYY-MM-DD HH:mm:ss')]
+                        insertOrderItemDetails = [response.insertId,item.productId,null,item.sellAs,item.qty,parseFloat(item.soldMeasurement),parseFloat(item.measurementBefore),parseFloat(item.measurementAfter),parseFloat(item.price),1,moment().format('YYYY-MM-DD HH:mm:ss'),moment().format('YYYY-MM-DD HH:mm:ss')]
     
                         // Get product details
                         productModel.getProduct(null, item.productId, function(productResponse) {
                             // Check if full or custom
-                            if(item.measurementAfter === productResponse[0].measurement) {
+                            if(parseFloat(item.measurementAfter) === parseFloat(productResponse[0].measurement)) {
                                 console.log('Product being sold as full.')
                                 // If product has been sold as full
                                 // If there is a product

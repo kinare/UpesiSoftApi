@@ -149,9 +149,9 @@ exports.getAllCategories = function(businessId = null, callback) {
 }
 
 exports.getSubProducts = function(productId = null, callback) {
-    let sql = "SELECT subProductList.*, measurementUnits.measurementAbbreviation, measurementUnits.measurementName, products.productName, products.sku, products.price, products.salePrice, products.unitPrice FROM ?? LEFT JOIN ?? ON ?? = ?? LEFT JOIN ?? ON ?? = ?? WHERE ?? = ?";
+    let sql = "SELECT subProductList.*, measurementUnits.measurementAbbreviation, measurementUnits.measurementName, products.productName, products.sku, products.price, products.salePrice, products.unitPrice FROM ?? LEFT JOIN ?? ON ?? = ?? LEFT JOIN ?? ON ?? = ?? WHERE ?? = ? AND WHERE ?? > ?";
     
-    let inserts = ['subProductList', 'measurementUnits', 'subProductList.measurementUnitId', 'measurementUnits.id', 'products', 'subProductList.primaryProductId', 'products.id', 'primaryProductId', productId];
+    let inserts = ['subProductList', 'measurementUnits', 'subProductList.measurementUnitId', 'measurementUnits.id', 'products', 'subProductList.primaryProductId', 'products.id', 'primaryProductId', productId, 'subProductList.measurement', '0.0'];
     sql = mysql.format(sql, inserts);
 
     pool.query(sql, function (error, results, fields) {
