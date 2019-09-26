@@ -216,13 +216,13 @@ exports.new = function(req, res) {
                             })
                         }
                     } else {
-                        // Check if user can create
+                        // Check if user can update
                         if(userPermissionsResponse[0].editProducts === 1) {
                             // Gather updated information
                             let updatedData = {}
 
-                            if(productImage)
-                                updatedData.productImage = productImage
+                            if(productImageUrl)
+                                updatedData.productImage = productImageUrl
                             if(productName)
                                 updatedData.productName = productName
                             if(productDescription)

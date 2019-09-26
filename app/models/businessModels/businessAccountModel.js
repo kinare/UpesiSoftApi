@@ -43,3 +43,23 @@ exports.getBusinessById = function(id = null, callback) {
         }
     });
 }
+
+exports.update = function(businessId = null, updateDetails = null, callback) {
+    // If codes match, update entry
+    let sql = "UPDATE ?? SET ? WHERE ?? = ?";
+
+    let inserts = ['businesses', updateDetails, 'id', businessId];
+    sql = mysql.format(sql, inserts);
+
+    pool.query(sql, function (error, results, fields) {
+        if (error) {
+            callback({
+                error: true,
+                text: 'There was an error updating the product.',
+                sqlMessage: error.sqlMessage ? error.sqlMessage : 'A database error was encountered.'
+            })
+        } else {
+            callback(results)
+        }
+    });    
+}
