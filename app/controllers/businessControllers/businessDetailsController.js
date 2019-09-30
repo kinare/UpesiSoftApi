@@ -85,6 +85,7 @@ exports.update = function(req, res) {
     let businessCurrency = req.body['businessCurrency'] ? req.body['businessCurrency'] : null
     let businessCountryCode = req.body['businessCountryCode'] ? req.body['businessCountryCode'] : null
     let businessPhoneNumber = req.body['businessPhoneNumber'] ? req.body['businessPhoneNumber'] : null
+    let businessEmail = req.body['businessEmail'] ? req.body['businessEmail'] : null
     let businessCountry = req.body['businessCountry'] ? req.body['businessCountry'] : null
     let businessPhysicalAddress = req.body['businessPhysicalAddress'] ? req.body['businessPhysicalAddress'] : null
     let businessPostalAddress = req.body['businessPostalAddress'] ? req.body['businessPostalAddress'] : null
@@ -142,6 +143,8 @@ exports.update = function(req, res) {
                             updatedData.businessCountryCode = businessCountryCode
                         if(businessPhoneNumber)
                             updatedData.businessPhoneNumber = businessPhoneNumber
+                        if(businessEmail)
+                            updatedData.businessEmail = businessEmail
                         if(businessCountry)
                             updatedData.businessCountry = businessCountry
                         if(businessPhysicalAddress)

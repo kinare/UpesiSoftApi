@@ -1,5 +1,6 @@
 let userIdentityModel = require('../../models/userModels/userIdentityModel')
 let businessAccountsModel = require('../../models/businessModels/businessAccountModel')
+let organizationDetailsModel = require('../../models/organizationModels/organizationDetailsModel')
 let sendMail = require('../../libraries/sendMail')
 var moment = require('moment')
 const bcrypt = require('bcryptjs')
@@ -67,36 +68,85 @@ exports.login = function(req, res) {
                 message: response.text ? response.text : 'There was an error login the user. Please contact support if the issue persists.'
             })
         } else {
-            // Get user token
-            businessAccountsModel.getBusinessById(response.businessId, function(businessResponse) {
-                userIdentityModel.getUserPermissions(response.userPermissionsId, (userPermissionsResponse) => {
-                    // Return data
-                    let payload = {
-                        email: response.email,
-                        userId: response.id,
-                        firstName: response.firstName,
-                        lastName: response.lastName,
-                        profilePicture: response.profilePicture,
-                        roleId: response.roleId,
-                        roleType: response.roleType,
-                        businessId: response.businessId
-                    }
-        
-                    let options = {
-                        issuer: req.hostname,
-                        subject: response.email,
-                        audience: req.hostname
-                    }
-        
-                    res.send({
-                        status: 'success',
-                        data: {
-                            user: response,
-                            userPermissions: userPermissionsResponse[0] ? userPermissionsResponse[0] : null,
-                            businessDetails: businessResponse[0] ? businessResponse[0] : null,
-                            token: jwt.sign(payload, key, options)
-                        }
+            // Get business details
+            const getBusinessDetails = new Promise((resolve, reject) => {
+                if(response.businessId) {
+                    businessAccountsModel.getBusinessById(response.businessId, function(businessResponse) {
+                        resolve(businessResponse[0] ? businessResponse[0] : null)
                     })
+                } else {
+                    resolve(null)
+                }
+            })
+
+            // Get organization details
+            const getOrganizationDetails = new Promise((resolve, reject) => {
+                if(response.organizationId) {
+                    organizationDetailsModel.getOrganizationById(response.organizationId, function(organizationDetailsResponse) {
+                        resolve(organizationDetailsResponse[0] ? organizationDetailsResponse[0] : null)
+                    })
+                } else {
+                    resolve(null)
+                }
+            })
+
+            // Get user permissions
+            const getUserPermissions = new Promise((resolve, reject) => {
+                if(response.userPermissionsId) {
+                    userIdentityModel.getUserPermissions(response.userPermissionsId, (userPermissionsResponse) => {
+                        resolve(userPermissionsResponse[0] ? userPermissionsResponse[0] : null)
+                    })
+                } else {
+                    resolve(null)
+                }
+            })
+
+            // Get user organization permissions
+            const getUserOrganizationPermissions = new Promise((resolve, reject) => {
+                if(response.userOrganizationPermissionsId) {
+                    userIdentityModel.getUserOrganizationPermissions(response.userOrganizationPermissionsId, (userOrganizationPermissionsResponse) => {
+                        resolve(userOrganizationPermissionsResponse[0] ? userOrganizationPermissionsResponse[0] : null)
+                    })
+                } else {
+                    resolve(null)
+                }
+            })
+
+            Promise.all([
+                getBusinessDetails,
+                getOrganizationDetails,
+                getUserPermissions,
+                getUserOrganizationPermissions
+            ]).then((responseData) => {
+                // Return data
+                let payload = {
+                    email: response.email,
+                    userId: response.id,
+                    firstName: response.firstName,
+                    lastName: response.lastName,
+                    profilePicture: response.profilePicture,
+                    roleId: response.roleId,
+                    roleType: response.roleType,
+                    businessId: response.businessId,
+                    organizationId: response.organizationId
+                }
+    
+                let options = {
+                    issuer: req.hostname,
+                    subject: response.email,
+                    audience: req.hostname
+                }
+    
+                res.send({
+                    status: 'success',
+                    data: {
+                        token: jwt.sign(payload, key, options),
+                        user: response,
+                        businessDetails: responseData[0] ? responseData[0] : null,
+                        organizationDetails: responseData[1] ? responseData[1] : null,
+                        userPermissions: responseData[2] ? responseData[2] : null,
+                        userOrganizationPermissions: responseData[3] ? responseData[3] : null
+                    }
                 })
             })
         }
@@ -108,24 +158,25 @@ exports.signup = function(req, res) {
     let firstName = req.body['firstName']
     let lastName = req.body['lastName']
     let email = req.body['email']
+    let phoneCountryCode = req.body['countryCode']
+    let phoneNumber = req.body['phoneNumber']
     let password = req.body['password']
     let confirmPassword = req.body['confirmPassword']
-    let userRoleId = req.body['userRoleId']
 
-    // Business parameters
-    let businessName = req.body['businessName']
-    let businessTypeId = req.body['businessTypeId']
+    // Organization parameters
+    let organizationName = req.body['organizationName']
 
     // Check if required parameters have been passed
     let errorArray = []
     if(!firstName) {errorArray.push({name: 'firstName', text: 'Missing first name parameter.'})}
-    if(!lastName) {errorArray.push({name: 'lastName', text: 'Missing last name parameter.'})}
+    if(!phoneCountryCode) {errorArray.push({name: 'phoneCountryCode', text: 'Missing phone country code parameter.'})}
+    if(!phoneNumber) {errorArray.push({name: 'phoneNumber', text: 'Missing phone number parameter.'})}
     if(!email) {errorArray.push({name: 'email', text: 'Missing email parameter.'})}
     if(!password) {errorArray.push({name: 'password', text: 'Missing password parameter.'})}
     if(!confirmPassword) {errorArray.push({name: 'confirmPassword', text: 'Missing confirm password parameter.'})}
-    if(!userRoleId) {errorArray.push({name: 'userRoleId', text: 'Missing role Id parameter.'})}
-    if(!businessName) {errorArray.push({name: 'businessName', text: 'Missing business name parameter.'})}
-    if(!businessTypeId) {errorArray.push({name: 'businessTypeId', text: 'Missing business type Id parameter.'})}
+    // if(!userRoleId) {errorArray.push({name: 'userRoleId', text: 'Missing role Id parameter.'})}
+    if(!organizationName) {errorArray.push({name: 'organizationName', text: 'Missing organization name parameter.'})}
+    // if(!businessTypeId) {errorArray.push({name: 'businessTypeId', text: 'Missing business type Id parameter.'})}
     if(password !== confirmPassword) {errorArray.push({name: 'confirmPassword', text: 'Passwords do not match. Please check.'})}
 
     if(errorArray.length > 0 ) {
@@ -139,25 +190,26 @@ exports.signup = function(req, res) {
         })
     }
 
-    // Insert business details
-    let insertBusinessData = {
-        businessName: businessName,
-        businessTypeId: businessTypeId,
-        createdAt: moment().format('YYYY-MM-DD HH:mm:ss'),
-        updatedAt: moment().format('YYYY-MM-DD HH:mm:ss')
+    // Insert organization details
+    let insertOrganizationData = {
+        organizationName: organizationName,
+        organizationCreatedAt: moment().format('YYYY-MM-DD HH:mm:ss'),
+        organizationUpdatedAt: moment().format('YYYY-MM-DD HH:mm:ss')
     }
 
-    businessAccountsModel.register(insertBusinessData, function(response) {
-        // Check if business details were inserted
+    organizationDetailsModel.create(insertOrganizationData, function(response) {
+        // Check if organization details were inserted
         if(response.insertId) {
             // Insert user details
             let insertUserData = {
-                firstName: firstName,
-                lastName: lastName,
-                email: email,
+                firstName: firstName ? firstName : null,
+                lastName: lastName ? lastName : null,
+                email: email ? email : null,
+                phoneCountryCode: phoneCountryCode ? phoneCountryCode : null,
+                userPhoneNumber: phoneNumber ? phoneNumber : null,
                 password: bcrypt.hashSync(password, 10),
-                roleId: userRoleId,
-                businessId: response.insertId,
+                roleId: 1, // 1 - organization owner id
+                organizationId: response.insertId,
                 activationCode: Math.floor(100000 + Math.random() * 900000),
                 createdAt: moment().format('YYYY-MM-DD HH:mm:ss'),
                 updatedAt: moment().format('YYYY-MM-DD HH:mm:ss')
@@ -192,14 +244,13 @@ exports.signup = function(req, res) {
             })
 
         } else {
-            // Error inserting business data
+            // Error inserting organization details
             res.status(400).send({
                 status: 'error',
-                message: 'There was an error inserting business details. Please try again. If the issue persists, contact an administrator.'
+                message: 'There was an error inserting organization details. Please try again. If the issue persists, contact an administrator.'
             })
         }
     })
-
 }
 
 exports.activate = function(req, res) {
