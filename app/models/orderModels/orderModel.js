@@ -100,7 +100,7 @@ exports.getOrders = function(businessId = null, orderType = null, orderId = null
 }
 
 exports.getOrderItems = function(orderId = null, callback) {
-    let sql = "SELECT orderItems.*, products.productName, products.measurementUnitId, measurementUnits.measurementName, measurementUnits.measurementAbbreviation FROM ?? LEFT JOIN ?? ON ?? = ?? LEFT JOIN ?? ON ?? = ?? WHERE ?? = ? AND ?? = ?";
+    let sql = "SELECT orderItems.*, products.productName, products.measurementUnitId, products.unitPrice as productUnitPrice, products.price as productDefaultPrice, measurementUnits.measurementName, measurementUnits.measurementAbbreviation FROM ?? LEFT JOIN ?? ON ?? = ?? LEFT JOIN ?? ON ?? = ?? WHERE ?? = ? AND ?? = ?";
     
     let inserts = ['orderItems', 'products', 'orderItems.productId', 'products.id', 'measurementUnits', 'products.measurementUnitId', 'measurementUnits.id', 'orderId', orderId, 'orderItems.state', 1];
     sql = mysql.format(sql, inserts);

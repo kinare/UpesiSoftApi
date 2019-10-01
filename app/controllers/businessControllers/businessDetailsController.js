@@ -73,10 +73,78 @@ exports.get = function(req, res) {
     })
 }
 
-exports.update = function(req, res) {
+/**
+ * Get all organization businesses
+ */
+exports.getAllOrganizationBusinesses = function(req, res) {
     // Get params
-    // Checking all parameters are available
-    let businessId = req.userDetails.businessId
+    let organizationId = req.userDetails.organizationId
+    let initiateUserId = req.userDetails.id
+
+    let errorArray = []
+    if(!organizationId) {errorArray.push({name: 'organizationId', text: 'Missing user token.'})}
+    if(!initiateUserId) {errorArray.push({name: 'initiateUserId', text: 'Missing user token.'})}
+
+    if(errorArray.length > 0 ) {
+        // If variables are missing
+        return res.status(400).send({
+            status: 'error',
+            message: 'Missing parameters. Please check data list.',
+            data: {
+                list: errorArray
+            }
+        })
+    }
+
+    // Get user details
+    userIdentityModel.getUser(initiateUserId, null, function(userResponse) {
+        if(userResponse) {
+            // Get user permissions
+            userIdentityModel.getUserPermissions(userResponse[0].userPermissionsId, function(userPermissionsResponse) {
+                if(userPermissionsResponse) {
+                    // Check if user can view
+                    if(userPermissionsResponse[0].viewBusinessDetails === 1) {
+                        // Get business details
+                        businessAccountModel.getBusinesses(organizationId, function(businessesResponse) {
+                            if(!businessesResponse.error && businessesResponse.length > 0) {
+                                res.send({
+                                    status: 'success',
+                                    data: {
+                                        businesses: businessesResponse
+                                    }
+                                })
+                            } else {
+                                res.status(400).send({
+                                    status: 'error',
+                                    message: businessesResponse.text ? businessesResponse.text : 'There was an error retrieving businesses.'
+                                })
+                            }
+                        })
+                    } else {
+                        res.status(400).send({
+                            status: 'error',
+                            message: 'Could not perform action. User is not authorized.'
+                        })
+                    }
+                } else {
+                    res.status(400).send({
+                        status: 'error',
+                        message: 'Could not perform action. There was an error retrieving user permissions.'
+                    })
+                }
+            })
+        } else {
+            res.status(400).send({
+                status: 'error',
+                message: 'Please login with a valid user. User trying to perform action not found.'
+            })
+        }
+    })
+}
+
+exports.create = function(req, res) {
+    // Get params
+    let businessId = req.userDetails.businessId ? req.userDetails.businessId : null
     let initiateUserId = req.userDetails.id
     let businessName = req.body['businessName'] ? req.body['businessName'] : null
     let businessTypeId = req.body['businessTypeId'] ? req.body['businessTypeId'] : null
@@ -96,13 +164,22 @@ exports.update = function(req, res) {
     if(!businessId) {errorArray.push({name: 'businessId', text: 'Missing user token.'})}
     if(!initiateUserId) {errorArray.push({name: 'initiateUserId', text: 'Missing user token.'})}
 
+    if(errorArray.length > 0 ) {
+        // If variables are missing
+        return res.status(400).send({
+            status: 'error',
+            message: 'Missing parameters. Please check data list.',
+            data: {
+                list: errorArray
+            }
+        })
+    }
+
     if(businessLogoImage) {
         // Insert business logo image
         const targetPath = path.normalize(process.env.IMAGES_UPLOAD_ROOT + 'images/businessLogos/' + businessLogoImage.filename + path.extname(businessLogoImage.originalname).toLowerCase())
         const tempPath = businessLogoImage.path
         var businessLogoImageUrl = businessLogoImage ? process.env.CDN_URL + 'images/businessLogos/' + businessLogoImage.filename + path.extname(businessLogoImage.originalname).toLowerCase() : null
-
-        console.log('Business logo image url: ' + typeof businessLogoImageUrl)
 
         // Update business logo image path name
         if (path.extname(businessLogoImage.originalname).toLowerCase()) {

@@ -1,6 +1,7 @@
 let userIdentityModel = require('../../models/userModels/userIdentityModel')
 let businessAccountsModel = require('../../models/businessModels/businessAccountModel')
 let organizationDetailsModel = require('../../models/organizationModels/organizationDetailsModel')
+let paymentPlansModel = require('../../models/paymentPlanModels/paymentPlansModel')
 let sendMail = require('../../libraries/sendMail')
 var moment = require('moment')
 const bcrypt = require('bcryptjs')
@@ -112,11 +113,28 @@ exports.login = function(req, res) {
                 }
             })
 
+            // Get user/organization payment plan
+            const getPaymentPlan = new Promise((resolve, reject) => {
+                // Check for payment plan
+                if(response.organizationId) {
+                    paymentPlansModel.getOrganizationPaymentPlan(response.organizationId, (paymentPlanResponse) => {
+                        if(!paymentPlanResponse.error && paymentPlanResponse[0]) {
+                            resolve(paymentPlanResponse[0] ? paymentPlanResponse[0] : null)
+                        } else {
+                            resolve(null)
+                        }
+                    })
+                } else {
+                    resolve(null)
+                }
+            })
+
             Promise.all([
                 getBusinessDetails,
                 getOrganizationDetails,
                 getUserPermissions,
-                getUserOrganizationPermissions
+                getUserOrganizationPermissions,
+                getPaymentPlan
             ]).then((responseData) => {
                 // Return data
                 let payload = {
@@ -145,7 +163,8 @@ exports.login = function(req, res) {
                         businessDetails: responseData[0] ? responseData[0] : null,
                         organizationDetails: responseData[1] ? responseData[1] : null,
                         userPermissions: responseData[2] ? responseData[2] : null,
-                        userOrganizationPermissions: responseData[3] ? responseData[3] : null
+                        userOrganizationPermissions: responseData[3] ? responseData[3] : null,
+                        paymentPlan: responseData[4] ? responseData[4] : null
                     }
                 })
             })

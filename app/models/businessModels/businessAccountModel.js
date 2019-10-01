@@ -44,6 +44,33 @@ exports.getBusinessById = function(id = null, callback) {
     });
 }
 
+// Get business by ID
+exports.getBusinesses = function(organizationId = null, callback) {
+    let sql = "SELECT businesses.*, businessTypes.businessTypeName FROM ?? LEFT JOIN ?? ON ?? = ?? WHERE ?? = ? AND ?? = ?";
+    
+    let inserts = ['businesses', 'businessTypes', 'businesses.businessTypeId', 'businessTypes.id', 'businesses.organizationId', organizationId, 'businesses.state', 1];
+    sql = mysql.format(sql, inserts);
+
+    pool.query(sql, function (error, results, fields) {
+        if (error) {
+            callback({
+                error: true,
+                text: 'There was an error retrieving organization businesses.',
+                sqlMessage: error.sqlMessage 
+            })
+        } else {
+            if(results && results.length > 0) {
+                callback(results)
+            } else {
+                callback({
+                    error: true,
+                    text: 'There were no businesses found.'
+                })
+            }
+        }
+    });
+}
+
 exports.update = function(businessId = null, updateDetails = null, callback) {
     // If codes match, update entry
     let sql = "UPDATE ?? SET ? WHERE ?? = ?";

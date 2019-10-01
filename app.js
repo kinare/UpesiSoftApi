@@ -11,6 +11,8 @@ var productsRouter = require('./routes/products')
 var customersRouter = require('./routes/customers')
 var ordersRouter = require('./routes/orders')
 var businessesRouter = require('./routes/businesses')
+var organizationsRouter = require('./routes/organizations')
+var paymentPlansRouter = require('./routes/paymentPlans')
 
 var cors = require('cors');
 var app = express();
@@ -27,6 +29,8 @@ app.use('/', productsRouter);
 app.use('/', customersRouter);
 app.use('/', ordersRouter);
 app.use('/', businessesRouter);
+app.use('/', organizationsRouter);
+app.use('/', paymentPlansRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

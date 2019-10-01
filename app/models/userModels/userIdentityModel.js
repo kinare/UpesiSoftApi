@@ -11,7 +11,7 @@ var moment = require('moment')
 
 // Get user by email
 exports.getUser = function(userId = null, email = null, callback) {
-    let sql = "SELECT users.*, userRoles.roleType, userRoles.userPermissionsId FROM ?? LEFT JOIN ?? ON ?? = ?? WHERE ?? = ?";
+    let sql = "SELECT users.*, userRoles.roleType, userRoles.userPermissionsId, userRoles.userOrganizationPermissionsId FROM ?? LEFT JOIN ?? ON ?? = ?? WHERE ?? = ?";
     
     // let columns = ['users.*', 'userRoles.name as roleType'];
     let inserts = ['users', 'userRoles', 'users.roleId', 'userRoles.id', 'users.state', 1];
@@ -63,7 +63,7 @@ exports.updateUserDetails = function(updateVariable = null, updateData = null, c
 
 // Check if user can login
 exports.login = function(email = null, password = null, callback) {
-    let sql = "SELECT users.*, userRoles.roleType, userRoles.userPermissionsId FROM ?? LEFT JOIN ?? ON ?? = ?? WHERE ?? = ? AND ?? = ?";
+    let sql = "SELECT users.*, userRoles.roleType, userRoles.userPermissionsId, userRoles.userOrganizationPermissionsId FROM ?? LEFT JOIN ?? ON ?? = ?? WHERE ?? = ? AND ?? = ?";
 
     let inserts = ['users', 'userRoles', 'users.roleId', 'userRoles.id', 'email', email, 'users.state', 1];
     sql = mysql.format(sql, inserts);
@@ -222,6 +222,27 @@ exports.getUserPermissions = function(userPermissionsId, callback) {
     let sql = "SELECT * FROM ?? WHERE ?? = ?";
     
     let inserts = ['userPermissions', 'id', userPermissionsId];
+    sql = mysql.format(sql, inserts);
+
+    pool.query(sql, function (error, results, fields) {
+        if (error) {
+            callback(false)
+        } else {
+            if(results && results.length > 0) {
+                callback(results)
+            } else {
+                // No user permissions exists
+                callback(false)
+            }
+        }
+    });
+}
+
+// Get user organization permissions
+exports.getUserOrganizationPermissions = function(userOrganizationPermissionsId, callback) {
+    let sql = "SELECT * FROM ?? WHERE ?? = ?";
+    
+    let inserts = ['userOrganizationPermissions', 'id', userOrganizationPermissionsId];
     sql = mysql.format(sql, inserts);
 
     pool.query(sql, function (error, results, fields) {

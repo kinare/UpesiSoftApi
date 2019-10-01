@@ -1,24 +1,9 @@
 var moment = require('moment')
-const organizationDetailsModel = require('../../models/organizationModels/organizationDetailsModel')
+const organizationUsersModel = require('../../models/organizationModels/organizationUsersModel')
 const userIdentityModel = require('../../models/userModels/userIdentityModel')
 
-/**
- * Create & update an organization's details
- * - Pass organization Id to update details
- */
-exports.create = function(req, res) {
-    return true
-}
-
-exports.delete = function(req, res) {
-    return true
-}
-
-/**
- * Get all organization details
- */
-exports.getDetails = function(req, res) {
-    // Get params
+exports.getAllUsers = function(req, res) {
+    // Getting params
     let organizationId = req.userDetails.organizationId ? req.userDetails.organizationId : null
     let initiateUserId = req.userDetails.id
 
@@ -45,20 +30,20 @@ exports.getDetails = function(req, res) {
             userIdentityModel.getUserOrganizationPermissions(userResponse[0].userOrganizationPermissionsId, function(userOrganizationPermissionsResponse) {
                 if(userOrganizationPermissionsResponse) {
                     // Check if user can view
-                    if(userOrganizationPermissionsResponse[0].viewOrganizationDetails === 1) {
+                    if(userOrganizationPermissionsResponse[0].viewUsers === 1) {
                         // Get details
-                        organizationDetailsModel.getOrganizationById(organizationId, function(organizationDetailsResponse) {
-                            if(!organizationDetailsResponse.error && organizationDetailsResponse) {
+                        organizationUsersModel.getAllUsers(organizationId, function(organizationUsersResponse) {
+                            if(!organizationUsersResponse.error && organizationUsersResponse) {
                                 res.send({
                                     status: 'success',
                                     data: {
-                                        organizationDetails: organizationDetailsResponse[0] ? organizationDetailsResponse[0] : null
+                                        organizationUsers: organizationUsersResponse ? organizationUsersResponse : null
                                     }
                                 })
                             } else {
                                 res.status(400).send({
                                     status: 'error',
-                                    message: 'There was an error retrieving business details.'
+                                    message: 'There was an error retrieving organization users.'
                                 })
                             }
                         })
@@ -83,4 +68,5 @@ exports.getDetails = function(req, res) {
             })
         }
     })
+
 }

@@ -8,6 +8,11 @@ const upload = multer({
 });
 
 router.get('/v1/businesses/single', userController.verifyUserToken, businessDetailsController.get)
-router.post('/v1/businesses/single', [userController.verifyUserToken, upload.single("businessLogoImage")], businessDetailsController.update)
+router.post('/v1/businesses/single', [userController.verifyUserToken, upload.single("businessLogoImage")], businessDetailsController.create)
+
+/**
+ * Organizations
+ */
+router.get('/v1/organization/businesses', userController.verifyUserToken, businessDetailsController.getAllOrganizationBusinesses)
 
 module.exports = router;

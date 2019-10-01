@@ -49,8 +49,11 @@ exports.getOrganizationById = function(organizationId = null, callback) {
             if(results && results.length > 0) {
                 callback(results)
             } else {
-                // No user permissions exists
-                callback(false)
+                // No organization with that ID exists
+                callback({
+                    error: true,
+                    text: error.sqlMessage ? error.sqlMessage : 'There was an error fetching organization details.'
+                })
             }
         }
     });

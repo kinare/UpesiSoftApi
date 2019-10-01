@@ -29,5 +29,4 @@ router.delete('/v1/b/role', userController.verifyUserToken, userRolesController.
 // 3. Businesses
 router.get('/v1/b/businessTypes', userManagement.getBusinessTypes)
 
-
 module.exports = router;
