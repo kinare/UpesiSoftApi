@@ -1,0 +1,14 @@
+{
+    "name": "d4a/api",
+    "description": "POS API",
+    "authors": [
+        {
+            "name": "Nicholas Kimuli",
+            "email": "nicholaskimuli@gmail.com"
+        }
+    ],
+    "require": {},
+    "require-dev": {
+        "odan/phinx-migrations-generator": "^4.4"
+    }
+}

@@ -158,6 +158,8 @@ exports.create = function(req, res) {
     let businessPhysicalAddress = req.body['businessPhysicalAddress'] ? req.body['businessPhysicalAddress'] : null
     let businessPostalAddress = req.body['businessPostalAddress'] ? req.body['businessPostalAddress'] : null
     let businessLogoImage = req.file ? req.file : null
+    let businessTagline = req.body['businessTagline'] ? req.body['businessTagline'] : null
+    let businessTerms = req.body['businessTerms'] ? req.body['businessTerms'] : null
 
     // Check for required information
     let errorArray = []
@@ -228,6 +230,10 @@ exports.create = function(req, res) {
                             updatedData.businessPhysicalAddress = businessPhysicalAddress
                         if(businessPostalAddress)
                             updatedData.businessPostalAddress = businessPostalAddress
+                        if(businessTagline)
+                            updatedData.businessTagline = businessTagline
+                        if(businessTerms)
+                            updatedData.businessTerms = businessTerms
 
                         updatedData.updatedAt = moment().format('YYYY-MM-DD HH:mm:ss')
 
