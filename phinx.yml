@@ -8,9 +8,9 @@ environments:
     production:
         adapter: mysql
         host: localhost
-        name: production_db
+        name: focusErp
         user: root
-        pass: ''
+        pass: 'Karibu098!@#'
         port: 3306
         charset: utf8
 
