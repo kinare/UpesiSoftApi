@@ -51,6 +51,7 @@ exports.new = function(req, res) {
     let availableFrom = req.body['availableFrom'] ? req.body['availableFrom'] : null
     let availableTo = req.body['availableTo'] ? req.body['availableTo'] : null
     let sku = req.body['sku'] ? req.body['sku'] : null
+    let buyingPrice = parseFloat(req.body['buyingPrice']) !== undefined ? parseFloat(req.body['buyingPrice']) : 0.00
     let price = parseFloat(req.body['price']) !== undefined ? parseFloat(req.body['price']) : 0.00
     let salePrice = parseFloat(req.body['price']) ? parseFloat(req.body['price']) : 0.00
     let unitPrice = parseFloat(req.body['unitPrice']) ? parseFloat(req.body['unitPrice']) : 0.00
@@ -145,6 +146,7 @@ exports.new = function(req, res) {
                                 storageLocation: storageLocation,
                                 customSaleUnit: customSaleUnit,
                                 measurement: measurement,
+                                buyingPrice: buyingPrice,
                                 qty: qty,
                                 price: price,
                                 salePrice: salePrice,
@@ -239,6 +241,8 @@ exports.new = function(req, res) {
                                 updatedData.availableTo = availableTo
                             if(sku)
                                 updatedData.sku = sku ? sku : 0
+                            if(buyingPrice)
+                                updatedData.buyingPrice = buyingPrice
                             if(price)
                                 updatedData.price = price
                             if(salePrice)
