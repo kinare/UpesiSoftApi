@@ -378,3 +378,61 @@ exports.updateProductCategory = function(categoryId = null, updateDetails = null
         }
     });    
 }
+
+// Get all product sales
+exports.getAllSales = function(productId = null, businessId = null, callback) {
+    let sql = "SELECT orderItems.*, orders.businessId, orders.customerId, customers.customerFirstName, customers.customerLastName, customers.customerBusinessName, customers.customerEmail, customers.isBusiness FROM ?? LEFT JOIN ?? ON ?? = ?? LEFT JOIN ?? ON ?? = ?? WHERE ?? = ? AND ?? = ? AND ?? = ?";
+    
+    let inserts = ['orderItems', 'orders', 'orderItems.orderId', 'orders.id', 'customers', 'orders.customerId', 'customers.id', 'orderItems.productId', productId, 'orders.businessId', businessId, 'orders.orderStatus', 'PAID'];
+    sql = mysql.format(sql, inserts);
+
+    pool.query(sql, function (error, results, fields) {
+        if (error) {
+            callback({
+                error: true,
+                text: 'There was an error retrieving the product sales.',
+                sqlMessage: error.sqlMessage 
+            })
+        } else {
+            if(results && results.length > 0) {
+                callback(results)
+            } else {
+                // No product sales exists
+                callback({
+                    error: true,
+                    text: 'There were no product sales found.'
+                })
+            }
+        }
+    });
+}
+
+// Get all product sales total
+exports.getSalesTotal = function(productId = null, businessId = null, callback) {
+    let sql = "SELECT SUM(??) AS salesTotal FROM ?? LEFT JOIN ?? ON ?? = ?? LEFT JOIN ?? ON ?? = ?? WHERE ?? = ? AND ?? = ? AND ?? = ?";
+    
+    // (SELECT COUNT(*) FROM subProductList WHERE subProductList.primaryProductId = products.id AND subProductList.measurement > 0.0)
+
+    let inserts = ['orderItems.price', 'orderItems', 'orders', 'orderItems.orderId', 'orders.id', 'customers', 'orders.customerId', 'customers.id', 'orderItems.productId', productId, 'orders.businessId', businessId, 'orders.orderStatus', 'PAID'];
+    sql = mysql.format(sql, inserts);
+
+    pool.query(sql, function (error, results, fields) {
+        if (error) {
+            callback({
+                error: true,
+                text: 'There was an error retrieving the product sales.',
+                sqlMessage: error.sqlMessage 
+            })
+        } else {
+            if(results && results.length > 0) {
+                callback(results)
+            } else {
+                // No product sales exists
+                callback({
+                    error: true,
+                    text: 'There were no product sales found.'
+                })
+            }
+        }
+    });
+}

@@ -5,6 +5,7 @@ const productController = require('../app/controllers/productControllers/product
 const productStockController = require('../app/controllers/productControllers/productStockController')
 const imageController = require('../app/controllers/imageControllers/imageController')
 const productImportController = require('../app/controllers/productControllers/productImportController')
+const productSalesController = require('../app/controllers/productControllers/productSalesController')
 var multer = require('multer')
 const upload = multer({
     dest: process.env.IMAGES_UPLOAD_ROOT + "images/products"
@@ -18,7 +19,7 @@ router.get('/v1/product/subProducts/all', userController.verifyUserToken, produc
 router.delete('/v1/subProduct', userController.verifyUserToken, productController.deleteSubProduct)
 
 // Get product sales
-router.get('/v1/product/sales', userController.verifyUserToken, productController.getSubProducts)
+router.get('/v1/product/sales', userController.verifyUserToken, productSalesController.getProductSales)
 
 router.get('/v1/products/measurementUnits', userController.verifyUserToken, productController.getMeasurementUnits)
 
