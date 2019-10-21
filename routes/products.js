@@ -17,6 +17,9 @@ router.delete('/v1/product', userController.verifyUserToken, productController.d
 router.get('/v1/product/subProducts/all', userController.verifyUserToken, productController.getSubProducts)
 router.delete('/v1/subProduct', userController.verifyUserToken, productController.deleteSubProduct)
 
+// Get product sales
+router.get('/v1/product/sales', userController.verifyUserToken, productController.getSubProducts)
+
 router.get('/v1/products/measurementUnits', userController.verifyUserToken, productController.getMeasurementUnits)
 
 router.post('/v1/products/createCategory', userController.verifyUserToken, productController.createCategory)

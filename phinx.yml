@@ -26,9 +26,9 @@ environments:
     testing:
         adapter: mysql
         host: localhost
-        name: testing_db
+        name: upesisoft
         user: root
-        pass: ''
+        pass: 'Karibu098!@#'
         port: 3306
         charset: utf8
 
